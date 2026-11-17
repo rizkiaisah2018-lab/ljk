@@ -37,24 +37,43 @@ textarea{min-height:56px}
 .kr b{width:24px;font-size:13px;color:#475569}
 .kr button{flex:1;padding:7px 0;border:1px solid #cbd5e1;background:#fff;border-radius:6px;font-weight:700}
 .kr button.on{background:#16a34a;color:#fff;border-color:#16a34a}
-#stuList{max-height:230px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px;margin-top:8px}
+#stuList{max-height:180px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px;margin-top:8px}
 .st{display:flex;justify-content:space-between;padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:14px;cursor:pointer}
 .st.done{background:#f0fdf4}.st.sel{background:#dbeafe;font-weight:700}.st b{color:#15803d}
-.cam{position:relative;background:#000;border-radius:12px;overflow:hidden;min-height:170px}
-.cam video{display:block;width:100%;height:auto}
+.cam{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:203/153;width:min(100%,calc(40vh * 203 / 153));margin:0 auto 8px}
+.cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cam canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.cam .status{position:absolute;left:6px;right:6px;bottom:6px;margin:0;padding:5px 9px;font-size:12px;line-height:1.3;opacity:.94}
+.cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;color:#475569}
+.cam.flash{outline:4px solid #22c55e;outline-offset:-4px}
+.cp{padding:8px 10px;margin-bottom:8px}
+.g2{display:grid;grid-template-columns:2fr 1fr;gap:6px;margin-bottom:6px}
+.gs{display:grid;grid-template-columns:auto 1fr auto;gap:6px}
+.cp select{padding:9px}
+.cp details summary{font-size:13px;color:#475569;cursor:pointer;padding:6px 2px}
+.ctl{display:flex;gap:6px;margin:0 0 8px}.ctl .btn{flex:1;padding:11px 6px;min-width:0}.ctl .btn.ic{flex:none;width:48px}
+#resBox{position:fixed;inset:0;z-index:40;background:rgba(15,23,42,.65);display:flex;align-items:flex-end;justify-content:center}
+.sheetm{background:#f1f5f9;width:100%;max-width:760px;max-height:96dvh;overflow:auto;border-radius:16px 16px 0 0;padding:10px 10px 0}
+.rh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rh .ok{color:#15803d;font-weight:700;font-size:13px}.rh b#rName{display:block;font-size:16px}
+.rh .score{text-align:center;background:#fff;border-radius:12px;padding:4px 14px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.rh .score b{font-size:30px;line-height:1.1;display:block}.rh .score small{color:#64748b}
+.mini{display:flex;gap:6px;font-size:13px;color:#475569;margin:4px 0}
+#dtl summary{font-size:13px;color:#475569;cursor:pointer;padding:6px 2px}
+.bar2{position:sticky;bottom:0;background:#f1f5f9;padding:8px 0 10px;display:flex;gap:8px}.bar2 .btn{flex:1}
+
 .status{padding:10px 12px;border-radius:10px;font-size:14px;margin:8px 0;background:#e2e8f0;color:#334155}
 .status.ok{background:#dcfce7;color:#166534}.status.warn{background:#fef3c7;color:#92400e}.status.err{background:#fee2e2;color:#991b1b}
-#cvBar{padding:8px 12px;font-size:13px;text-align:center;background:#fef3c7;color:#92400e;border-radius:10px;margin-bottom:8px}
+#cvBar{padding:5px 10px;font-size:12px;text-align:center;background:#fef3c7;color:#92400e;border-radius:10px;margin-bottom:8px}
 #cvBar.ok{background:#dcfce7;color:#166534}#cvBar.err{background:#fee2e2;color:#991b1b}
 label.sl{display:flex;align-items:center;gap:8px;font-size:13px;color:#0f172a;margin:6px 0}label.sl input[type=range]{flex:1}
 #result{display:block;width:100%;height:auto;border-radius:12px;background:#fff;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .stat{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
 .stat div{flex:1;min-width:90px;background:#fff;border-radius:12px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .stat b{display:block;font-size:22px}.stat small{color:#64748b}
-#grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}
-.c{border-radius:10px;padding:6px 2px;text-align:center;background:#e2e8f0;border:2px solid transparent;cursor:pointer;user-select:none}
-.c b{display:block;font-size:11px;color:#475569}.c span{display:block;font-size:19px;font-weight:700}.c small{display:block;font-size:10px;color:#475569}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:5px;margin:6px 0}
+.c{border-radius:8px;padding:3px 2px;text-align:center;background:#e2e8f0;border:2px solid transparent;cursor:pointer;user-select:none}
+.c b{display:block;font-size:10px;color:#475569}.c span{display:block;font-size:16px;font-weight:700;line-height:1.1}.c small{display:block;font-size:9px;color:#475569}
 .c.ok{background:#dcfce7;border-color:#16a34a}.c.bad{background:#fee2e2;border-color:#dc2626}
 .tw{overflow:auto;background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 table.rk{width:100%;border-collapse:collapse;font-size:14px}
@@ -156,35 +175,46 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     <!-- Scan -->
     <section id="vScan" class="view" hidden>
       <div id="cvBar">Memuat OpenCV.js… mohon tunggu</div>
-      <div class="card">
-        <label>Ujian</label><select id="sUjian"></select>
-        <label>Kelas</label><select id="sKelas"></select>
-        <input type="search" id="sCari" placeholder="Cari nama siswa…" style="margin-top:8px">
-        <div id="stuList"></div>
-      </div>
-      <div class="status" id="selInfo">Pilih ujian, kelas, lalu siswa.</div>
-      <div class="card">
-        <div class="row">
-          <button class="btn" id="btnCam">Mulai Kamera</button>
-          <button class="btn ok" id="btnScan" disabled>Ambil &amp; Scan LJK</button>
-          <button class="btn alt" id="btnPhoto" style="flex-basis:100%">📷 Foto / Pilih Gambar (cadangan jika kamera diblokir)</button>
-          <input type="file" id="file" accept="image/*" capture="environment" hidden>
+      <div class="card cp">
+        <div class="g2"><select id="sUjian" aria-label="Ujian"></select><select id="sKelas" aria-label="Kelas"></select></div>
+        <div class="gs">
+          <button class="btn alt sm" id="btnPrev" aria-label="Siswa sebelumnya">◀</button>
+          <select id="sSiswa" aria-label="Siswa"></select>
+          <button class="btn alt sm" id="btnNext" aria-label="Siswa berikutnya">▶</button>
         </div>
-        <label class="sl"><input type="checkbox" id="rt" checked> Mode real-time (scan otomatis terus-menerus)</label>
+        <details><summary>Cari / lihat daftar siswa</summary>
+          <input type="search" id="sCari" placeholder="Cari nama siswa…">
+          <div id="stuList"></div>
+        </details>
+      </div>
+      <div class="status" id="selInfo" hidden></div>
+      <div class="cam" id="cam">
+        <div class="ph" id="camPh">📷</div>
+        <video id="video" playsinline muted autoplay></video><canvas id="overlay"></canvas>
+        <div class="status" id="status">Tekan "Mulai Kamera", lalu arahkan ke LJK (posisi mendatar).</div>
+      </div>
+      <div class="ctl">
+        <button class="btn" id="btnCam">Mulai Kamera</button>
+        <button class="btn ok" id="btnScan" disabled>Scan Sekarang</button>
+        <button class="btn alt ic" id="btnPhoto" title="Foto / pilih gambar (cadangan jika kamera diblokir)">🖼</button>
+        <input type="file" id="file" accept="image/*" capture="environment" hidden>
+      </div>
+      <details class="card cp"><summary>⚙ Pengaturan scan</summary>
+        <label class="sl"><input type="checkbox" id="rt" checked> Mode real-time (scan otomatis)</label>
+        <label class="sl"><input type="checkbox" id="snd" checked> Bunyi bip &amp; getar saat scan selesai</label>
         <label class="sl">Ambang isian: <b id="thrVal">40</b>% <input type="range" id="thr" min="20" max="75" value="40"></label>
-      </div>
-      <div class="cam"><video id="video" playsinline muted autoplay></video><canvas id="overlay"></canvas></div>
-      <div class="status" id="status">Tekan "Mulai Kamera", lalu arahkan ke LJK.</div>
+      </details>
       <div id="resBox" hidden>
-        <canvas id="result"></canvas>
-        <div class="stat">
-          <div><b id="sBenar">0</b><small>Benar</small></div>
-          <div><b id="sSalah">0</b><small>Salah</small></div>
-          <div><b id="sSkor">0</b><small>Skor (0-100)</small></div>
+        <div class="sheetm">
+          <div class="rh">
+            <div><span class="ok">✔ Scan selesai</span><b id="rName"></b></div>
+            <div class="score"><b id="sSkor">0</b><small>skor</small></div>
+          </div>
+          <div class="mini"><span>Benar: <b id="sBenar">0</b></span><span>·</span><span>Salah: <b id="sSalah">0</b></span></div>
+          <canvas id="result"></canvas>
+          <details id="dtl"><summary id="dtlSum">Koreksi manual (ketuk nomor: A → B → C → D → kosong)</summary><div id="grid"></div></details>
+          <div class="bar2"><button class="btn alt" id="btnRetry">Ulangi</button><button class="btn ok" id="btnSave" disabled>Simpan</button></div>
         </div>
-        <div class="hint">Ketuk kotak nomor untuk koreksi manual (A → B → C → D → kosong).</div>
-        <div id="grid"></div>
-        <div class="row"><button class="btn ok" id="btnSave" disabled>Simpan</button></div>
       </div>
     </section>
 
@@ -457,6 +487,9 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     catch (e) { $('stuList').innerHTML = ''; toast(errMsg(e), 'err'); }
   }
   function renderStu() {
+    $('sSiswa').innerHTML = '<option value="">' + (cur.siswa.length ? '— pilih siswa —' : '(tidak ada siswa)') + '</option>' +
+      cur.siswa.map((s, i) => `<option value="${esc(s.nomor)}">${i + 1}. ${esc(s.nama)}${s.skor != null ? '  ✔ ' + s.skor : ''}</option>`).join('');
+    $('sSiswa').value = cur.sel || '';
     const q = $('sCari').value.trim().toLowerCase();
     $('stuList').innerHTML = cur.siswa.map((s, i) => ({ s: s, i: i })).filter(x => !q || x.s.nama.toLowerCase().includes(q) || x.s.nomor.includes(q))
       .map(x => `<div class="st ${x.s.skor != null ? 'done' : ''} ${cur.sel === x.s.nomor ? 'sel' : ''}" data-n="${esc(x.s.nomor)}"><span>${x.i + 1}. ${esc(x.s.nama)}</span><b>${x.s.skor != null ? x.s.skor : ''}</b></div>`).join('')
@@ -472,8 +505,16 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
   function updSave() {
     const s = cur.siswa.find(x => x.nomor === cur.sel);
     $('btnSave').disabled = !(lastRatios && s) || saving || saved;
-    $('btnSave').textContent = saved ? 'Sudah tersimpan ✔' : (s ? 'Simpan untuk ' + s.nama : 'Pilih siswa dulu');
+    $('btnSave').textContent = saved ? 'Sudah tersimpan ✔' : (s ? 'Simpan' : 'Pilih siswa dulu');
+    $('rName').textContent = s ? s.nama + ' (' + s.nomor + ')' : 'Siswa belum dipilih — tutup lalu pilih siswa';
   }
+  $('sSiswa').onchange = () => { cur.sel = $('sSiswa').value || null; renderStu(); };
+  const stepStu = d => {
+    if (!cur.siswa.length) return;
+    const i = cur.siswa.findIndex(x => x.nomor === cur.sel), j = Math.min(cur.siswa.length - 1, Math.max(0, (i < 0 ? (d > 0 ? -1 : cur.siswa.length) : i) + d));
+    cur.sel = cur.siswa[j].nomor; renderStu();
+  };
+  $('btnPrev').onclick = () => stepStu(-1); $('btnNext').onclick = () => stepStu(1);
   $('stuList').onclick = e => {
     const el = e.target.closest('.st'); if (!el || !el.dataset.n) return;
     cur.sel = el.dataset.n; renderStu();
@@ -483,7 +524,6 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     for (let i = fromIdx + 1; i < cur.siswa.length; i++) if (cur.siswa[i].skor == null) { n = cur.siswa[i].nomor; break; }
     if (n === null && fromIdx < 0) n = cur.siswa.length ? cur.siswa[0].nomor : null;
     cur.sel = n; renderStu();
-    const el = $('stuList').querySelector('.sel'); if (el) el.scrollIntoView({ block: 'nearest' });
   }
   $('sUjian').onchange = onSUjian; $('sKelas').onchange = () => { resetResult(); loadStudents(); }; $('sCari').oninput = renderStu;
 
@@ -512,14 +552,26 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
      KAMERA
      ============================================================ */
   const video = $('video'), overlay = $('overlay'), cap = document.createElement('canvas'), base = document.createElement('canvas');
-  let stream = null, timer = null, busy = false, useImg = null;
+  let stream = null, timer = null, busy = false, useImg = null, pauseUntil = 0;
+  let actx = null;
+  const sndOn = () => $('snd') && $('snd').checked;
+  function initAudio() { try { if (!actx) { const C = window.AudioContext || window.webkitAudioContext; if (C) actx = new C(); } if (actx && actx.state === 'suspended') actx.resume(); } catch (e) { } }
+  function beep(f, d, w) {
+    if (!actx || !sndOn()) return;
+    try { const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + (w || 0); o.type = 'square'; o.frequency.value = f; g.gain.value = 0.18; o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + d); } catch (e) { }
+  }
+  const buzz = p => { try { if (sndOn() && navigator.vibrate) navigator.vibrate(p); } catch (e) { } };
+  function fbScan() { beep(1800, 0.13); buzz(130); const c = $('cam'); c.classList.add('flash'); setTimeout(() => c.classList.remove('flash'), 600); }
+  function fbSave() { beep(1200, 0.08); beep(1800, 0.12, 0.11); buzz([60, 50, 60]); }
+  function fbErr() { beep(280, 0.25); buzz(220); }
+  document.addEventListener('pointerdown', initAudio);
   function setStatus(msg, cls) { const el = $('status'); el.textContent = msg; el.className = 'status ' + (cls || ''); }
 
   function startCam() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setStatus('Kamera tidak tersedia di browser ini (butuh HTTPS).', 'err'); return; }
     navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false })
       .then(st => { stream = st; video.srcObject = st; return video.play(); })
-      .then(() => { $('btnCam').textContent = 'Matikan Kamera'; $('btnScan').disabled = !cvReady; setStatus('Arahkan kamera hingga 4 kotak sudut LJK terlihat jelas.', 'warn'); loop(); })
+        .then(() => { $('camPh').hidden = true; $('btnCam').textContent = 'Matikan Kamera'; $('btnScan').disabled = !cvReady; setStatus('Arahkan kamera hingga 4 kotak sudut LJK terlihat jelas.', 'warn'); loop(); })
       .catch(err => { stream = null; setStatus('Kamera gagal dibuka: ' + errMsg(err) + '. Izinkan akses kamera, atau pakai tombol "Foto / Pilih Gambar".', 'err'); });
   }
   function stopCam() {
@@ -527,9 +579,9 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     if (stream) stream.getTracks().forEach(t => t.stop());
     stream = null; video.srcObject = null;
     overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
-    $('btnCam').textContent = 'Mulai Kamera'; $('btnScan').disabled = true;
+    $('camPh').hidden = false; $('btnCam').textContent = 'Mulai Kamera'; $('btnScan').disabled = true;
   }
-  $('btnCam').onclick = () => { if (stream) stopCam(); else startCam(); };
+  $('btnCam').onclick = () => { initAudio(); if (stream) stopCam(); else startCam(); };
 
   /* ============================================================
      PENGOLAHAN CITRA (tidak berubah dari versi yang sudah bekerja)
@@ -648,19 +700,28 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     } finally { mats.forEach(m => { try { m.delete(); } catch (x) { } }); }
   }
   function drawOverlay(o) {
-    overlay.width = o.w || overlay.width; overlay.height = o.h || overlay.height;
-    const ctx = overlay.getContext('2d'); ctx.clearRect(0, 0, overlay.width, overlay.height);
-    if (!o.pts) return;
-    ctx.strokeStyle = o.ok ? '#22c55e' : '#f59e0b'; ctx.fillStyle = ctx.strokeStyle; ctx.lineWidth = Math.max(3, overlay.width / 200);
-    ctx.beginPath(); o.pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }); ctx.closePath(); ctx.stroke();
-    o.pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, ctx.lineWidth * 2.5, 0, 6.2832); ctx.fill(); });
+    const bw = overlay.clientWidth || 300, bh = overlay.clientHeight || 225;
+    if (overlay.width !== bw) overlay.width = bw; if (overlay.height !== bh) overlay.height = bh;
+    const ctx = overlay.getContext('2d'); ctx.clearRect(0, 0, bw, bh);
+    // bingkai panduan: LJK (setengah F4, mendatar) diletakkan memenuhi bingkai ini
+    const m = Math.round(bw * 0.04), L2 = Math.round(bw * 0.07);
+    ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 3;
+    [[m, m, 1, 1], [bw - m, m, -1, 1], [bw - m, bh - m, -1, -1], [m, bh - m, 1, -1]].forEach(c => {
+      ctx.beginPath(); ctx.moveTo(c[0] + c[2] * L2, c[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(c[0], c[1] + c[3] * L2); ctx.stroke();
+    });
+    if (!o || !o.pts || !o.w) return;
+    const sc = Math.max(bw / o.w, bh / o.h), ox = (bw - o.w * sc) / 2, oy = (bh - o.h * sc) / 2;
+    const P = o.pts.map(p => ({ x: p.x * sc + ox, y: p.y * sc + oy }));
+    ctx.strokeStyle = o.ok ? '#22c55e' : '#f59e0b'; ctx.fillStyle = ctx.strokeStyle; ctx.lineWidth = 3;
+    ctx.beginPath(); P.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }); ctx.closePath(); ctx.stroke();
+    P.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, 6.2832); ctx.fill(); });
   }
   function flat(r) { return [].concat.apply([], r); }
   function sameSheet(a, b) { if (!a || !b) return false; const x = flat(a), y = flat(b); let d = 0; for (let i = 0; i < x.length; i++) d += Math.abs(x[i] - y[i]); return d / x.length < 0.03; }
 
   function loop() {
     clearTimeout(timer); if (!stream) return;
-    if (!busy && cvReady && video.videoWidth) {
+    if (!busy && cvReady && video.videoWidth && $('resBox').hidden && Date.now() >= pauseUntil) {
       busy = true;
       try {
         const rt = $('rt').checked, o = analyze(rt && !!cur.ujian);
@@ -679,10 +740,10 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     if (!stream || !cvReady || busy) return;
     if (!cur.ujian) { setStatus('Pilih ujian dan siswa terlebih dahulu.', 'warn'); return; }
     busy = true; const o = analyze(true); drawOverlay(o);
-    setStatus(o.ok ? 'Scan berhasil. Periksa preview lalu simpan.' : o.msg, o.ok ? 'ok' : o.cls); busy = false;
-    if (o.ok && o.data) { holdSig = null; showResult(o.data); $('resBox').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    setStatus(o.ok ? 'Scan berhasil. Periksa hasil lalu simpan.' : o.msg, o.ok ? 'ok' : o.cls); busy = false;
+    if (o.ok && o.data) { holdSig = null; showResult(o.data); } else fbErr();
   };
-  $('btnPhoto').onclick = () => $('file').click();
+  $('btnPhoto').onclick = () => { initAudio(); $('file').click(); };
   $('file').onchange = function () {
     const f = this.files && this.files[0]; this.value = ''; if (!f) return;
     if (!cur.ujian) { setStatus('Pilih ujian dan siswa terlebih dahulu.', 'warn'); return; }
@@ -692,7 +753,7 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     img.onload = () => {
       useImg = img; busy = true; const o = analyze(true); useImg = null; busy = false; URL.revokeObjectURL(url);
       setStatus(o.ok ? 'Scan dari foto berhasil. Periksa preview lalu simpan.' : o.msg, o.ok ? 'ok' : o.cls);
-      if (o.ok && o.data) { holdSig = null; showResult(o.data); $('resBox').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      if (o.ok && o.data) { holdSig = null; showResult(o.data); } else fbErr();
     };
     img.onerror = () => { URL.revokeObjectURL(url); setStatus('Gambar tidak dapat dibaca.', 'err'); };
     img.src = url;
@@ -705,7 +766,13 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     const thr = parseInt($('thr').value, 10) / 100;
     answers = lastRatios.map(row => { const m = []; row.forEach((v, j) => { if (v >= thr) m.push(j); }); return m.length === 0 ? '-' : (m.length > 1 ? 'GANDA' : L.letters[m[0]]); });
   }
-  function showResult(data) { lastRatios = data.ratios; saved = false; interpret(); $('resBox').hidden = false; renderAll(); }
+  function showResult(data) {
+    const wasOpen = !$('resBox').hidden;
+    lastRatios = data.ratios; saved = false; interpret(); $('resBox').hidden = false; renderAll();
+    if (!wasOpen) fbScan();
+  }
+  function closeRes() { resetResult(); pauseUntil = Date.now() + 1500; if (stream) setStatus('Arahkan kamera ke LJK berikutnya.', 'warn'); }
+  $('btnRetry').onclick = closeRes;
   function score() {
     const n = cur.ujian.jumlah, k = cur.ujian.kunci; let b = 0;
     for (let i = 0; i < n; i++) if (k[i] && answers[i] === k[i]) b++;
@@ -735,6 +802,9 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     let h = '';
     for (let i = 0; i < n; i++) { const a = answers[i], k = cur.ujian.kunci[i] || '?'; h += `<div class="c ${a === k ? 'ok' : 'bad'}" data-i="${i}"><b>No. ${i + 1}</b><span>${a}</span><small>kunci ${k}</small></div>`; }
     $('grid').innerHTML = h; drawPreview(); updSave();
+    const cek = answers.slice(0, n).filter(x => x === '-' || x === 'GANDA').length;
+    $('dtlSum').textContent = 'Koreksi manual (ketuk nomor: A → B → C → D → kosong)' + (cek ? ' — ' + cek + ' nomor kosong/ganda, periksa' : '');
+    if (cek && !$('dtl').dataset.u) $('dtl').open = true;
   }
   $('grid').onclick = e => {
     const el = e.target.closest('.c'); if (!el) return;
@@ -750,10 +820,10 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
       const r = await authCall('simpan', { idUjian: cur.ujian.id, kelas: cur.kelas, nomor: s.nomor, jawaban: answers.slice(0, cur.ujian.jumlah) });
       s.skor = r.skor; s.benar = r.benar; saved = true; holdSig = lastRatios;
       toast(s.nama + ': skor ' + r.skor + (r.diperbarui ? ' (nilai lama diperbarui)' : ' tersimpan'), 'ok');
-      const idx = cur.siswa.indexOf(s); renderStu(); pickNext(idx);
-      saved = true; updSave(); $('btnSave').textContent = 'Sudah tersimpan ✔';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (e) { toast(errMsg(e), 'err'); }
+      fbSave();
+      const idx = cur.siswa.indexOf(s); $('resBox').hidden = true; $('dtl').open = false; renderStu(); pickNext(idx);
+      pauseUntil = Date.now() + 800; if (stream) setStatus('Tersimpan ✔ Arahkan ke LJK berikutnya.', 'ok');
+    } catch (e) { toast(errMsg(e), 'err'); fbErr(); }
     saving = false; updSave();
   };
 
