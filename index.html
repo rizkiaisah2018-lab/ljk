@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>LJK Scanner Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#f1f5f9;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#0f172a}
+[hidden]{display:none!important}
+main{max-width:760px;margin:0 auto;padding:12px}
+button,input,select,textarea{font:inherit}
+h3{margin:4px 0 8px}
+label{display:block;font-size:13px;color:#475569;margin:8px 0 2px}
+input[type=text],input[type=password],input[type=search],input[type=number],select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a}
+textarea{min-height:56px}
+.btn{padding:12px 14px;border:0;border-radius:10px;background:#2563eb;color:#fff;font-weight:600;font-size:15px;cursor:pointer}
+.btn:disabled{background:#94a3b8;cursor:default}
+.btn.alt{background:#475569}.btn.ok{background:#16a34a}.btn.sm{padding:8px 12px;font-size:13px}
+.row{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}.row>*{flex:1;min-width:120px}
+.card{background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.sub{font-size:13px;color:#64748b;margin:2px 0 6px}
+.hint{font-size:12px;color:#64748b;margin:6px 0}
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:50;max-width:92%;padding:10px 16px;border-radius:10px;background:#0f172a;color:#fff;font-size:14px;opacity:0;pointer-events:none;transition:.25s}
+#toast.on{opacity:1}#toast.err{background:#b91c1c}#toast.ok{background:#15803d}
+#loginView{max-width:420px;margin:0 auto;padding:24px 14px}
+#appHdr{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#e2e8f0;font-size:14px}
+.nav{display:flex;position:sticky;top:0;z-index:5;background:#0f172a}
+.nav button{flex:1;padding:13px 4px;border:0;background:transparent;color:#cbd5e1;font-size:14px;font-weight:600}
+.nav button.on{color:#fff;border-bottom:3px solid #38bdf8}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips label{margin:0;padding:7px 11px;border:1px solid #cbd5e1;border-radius:20px;font-size:14px;color:#0f172a;background:#fff;cursor:pointer;user-select:none}
+.chips input{display:none}.chips label.on{background:#2563eb;border-color:#2563eb;color:#fff}
+.grp{float:right}.grp button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:3px 8px;font-size:12px;margin-left:4px}
+.keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:8px 0}
+.kr{display:flex;align-items:center;gap:4px;background:#f8fafc;border-radius:8px;padding:4px 6px}
+.kr b{width:24px;font-size:13px;color:#475569}
+.kr button{flex:1;padding:7px 0;border:1px solid #cbd5e1;background:#fff;border-radius:6px;font-weight:700}
+.kr button.on{background:#16a34a;color:#fff;border-color:#16a34a}
+#stuList{max-height:230px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px;margin-top:8px}
+.st{display:flex;justify-content:space-between;padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:14px;cursor:pointer}
+.st.done{background:#f0fdf4}.st.sel{background:#dbeafe;font-weight:700}.st b{color:#15803d}
+.cam{position:relative;background:#000;border-radius:12px;overflow:hidden;min-height:170px}
+.cam video{display:block;width:100%;height:auto}
+.cam canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.status{padding:10px 12px;border-radius:10px;font-size:14px;margin:8px 0;background:#e2e8f0;color:#334155}
+.status.ok{background:#dcfce7;color:#166534}.status.warn{background:#fef3c7;color:#92400e}.status.err{background:#fee2e2;color:#991b1b}
+#cvBar{padding:8px 12px;font-size:13px;text-align:center;background:#fef3c7;color:#92400e;border-radius:10px;margin-bottom:8px}
+#cvBar.ok{background:#dcfce7;color:#166534}#cvBar.err{background:#fee2e2;color:#991b1b}
+label.sl{display:flex;align-items:center;gap:8px;font-size:13px;color:#0f172a;margin:6px 0}label.sl input[type=range]{flex:1}
+#result{display:block;width:100%;height:auto;border-radius:12px;background:#fff;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.stat{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
+.stat div{flex:1;min-width:90px;background:#fff;border-radius:12px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.stat b{display:block;font-size:22px}.stat small{color:#64748b}
+#grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}
+.c{border-radius:10px;padding:6px 2px;text-align:center;background:#e2e8f0;border:2px solid transparent;cursor:pointer;user-select:none}
+.c b{display:block;font-size:11px;color:#475569}.c span{display:block;font-size:19px;font-weight:700}.c small{display:block;font-size:10px;color:#475569}
+.c.ok{background:#dcfce7;border-color:#16a34a}.c.bad{background:#fee2e2;border-color:#dc2626}
+.tw{overflow:auto;background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+table.rk{width:100%;border-collapse:collapse;font-size:14px}
+table.rk th,table.rk td{padding:8px 8px;border-bottom:1px solid #f1f5f9;text-align:left;white-space:nowrap}
+table.rk th{background:#f8fafc;position:sticky;top:0}
+.tu{color:#15803d;font-weight:700}.rm{color:#b91c1c;font-weight:700}.bl{color:#94a3b8}
+.bt{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px}.bt span{width:54px}.bt b{width:40px;text-align:right}
+.bar{flex:1;height:14px;background:#e2e8f0;border-radius:7px;overflow:hidden}.bar i{display:block;height:100%}
+
+/* ===== Kertas LJK: setengah F4 (215x165 mm) dikurangi margin 6 mm => 203x153 mm ===== */
+#sheetsWrap{width:100%;overflow:hidden}
+#sheets{transform-origin:top left}
+.page{position:relative;background:#fff;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.25);margin-bottom:12px}
+.cell{position:relative;overflow:hidden}
+.cut{position:absolute;left:0;width:100%;height:0;border-top:.2mm dashed #888}
+.sheet{position:absolute;width:203mm;height:153mm;transform-origin:top left;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+.ttl{position:absolute;left:0;right:0;top:0;text-align:center;font-weight:700;font-size:4.6mm;letter-spacing:.3mm}
+.hd{position:absolute;left:3mm;right:3mm;top:8mm;display:grid;grid-template-columns:1.55fr 1fr;gap:2.2mm 7mm}
+.ln{display:flex;align-items:flex-end;font-size:3.2mm}
+.ln span{width:25mm;font-weight:700;flex:none}
+.ln i{flex:1;border-bottom:.3mm solid #000;height:5mm;font-style:normal;padding-left:2mm;white-space:nowrap;overflow:hidden}
+.note{position:absolute;left:3mm;right:3mm;top:25mm;font-size:2.5mm;line-height:1.3}
+.area{position:absolute;left:5mm;top:38mm;width:193mm;height:96mm}
+.mk{position:absolute;width:7mm;height:7mm;background:#000;transform:translate(-50%,-50%)}
+.ori{position:absolute;width:24mm;height:2.4mm;background:#000;transform:translate(-50%,-50%)}
+.bub{position:absolute;width:5.2mm;height:5.2mm;border:.3mm solid #000;border-radius:50%;transform:translate(-50%,-50%);background:#fff}
+.num{position:absolute;transform:translate(-50%,-50%);font-size:3.4mm;font-weight:700;width:7mm;text-align:center}
+.opt{position:absolute;transform:translate(-50%,-50%);font-size:3.2mm;font-weight:700;width:6mm;text-align:center}
+.foot{position:absolute;left:0;right:0;top:143mm;text-align:center;font-size:2.4mm}
+
+@media print{
+  html,body{background:#fff!important}
+  #loginView,#appHdr,.nav,.noprint,#toast,.view:not(#vCetak){display:none!important}
+  #vCetak{display:block!important}
+  main{max-width:none!important;padding:0!important;margin:0!important}
+  #sheetsWrap{overflow:visible!important;height:auto!important}
+  #sheets{zoom:1!important}
+  .page{box-shadow:none!important;margin:0!important;break-after:page;page-break-after:always}
+  .page:last-child{break-after:auto;page-break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+<style id="pgStyle"></style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- ================= LOGIN ================= -->
+<section id="loginView">
+  <div class="card">
+    <h3>LJK Scanner Pro</h3>
+    <div class="sub">Masuk sebagai guru</div>
+    <label>Nama Guru</label>
+    <input type="text" id="lGuru" list="dlGuru" placeholder="Ketik nama atau pilih dari daftar" autocomplete="off" autocapitalize="words" spellcheck="false">
+    <datalist id="dlGuru"></datalist>
+    <div class="hint">Ketik sebagian nama (misal: &quot;Agustusanto&quot;) lalu pilih dari saran, atau tulis lengkap.</div>
+    <label>PIN</label>
+    <input type="password" id="lPin" placeholder="PIN dari admin" autocomplete="off">
+    <div class="row"><button class="btn" id="btnLogin">Masuk</button></div>
+    <div class="status" id="lMsg" hidden></div>
+    <div class="hint" id="lInfo" hidden></div>
+    <div class="row"><button class="btn alt sm" id="btnRetry" hidden>Muat ulang daftar guru</button></div>
+  </div>
+</section>
+
+<!-- ================= APLIKASI ================= -->
+<div id="appView" hidden>
+  <div id="appHdr"><span>👤 <b id="gName"></b></span><button class="btn sm alt" id="btnOut">Keluar</button></div>
+  <nav class="nav">
+    <button data-t="ujian" class="on">Ujian &amp; Kunci</button>
+    <button data-t="scan">Scan</button>
+    <button data-t="rekap">Rekap</button>
+    <button data-t="cetak">Cetak LJK</button>
+  </nav>
+  <main>
+    <!-- Ujian & Kunci -->
+    <section id="vUjian" class="view">
+      <div id="ujList"></div>
+      <button class="btn" id="btnNew" style="width:100%">+ Buat Ujian Baru</button>
+      <div id="ujForm" class="card" hidden style="margin-top:10px">
+        <h3 id="ujTitle">Ujian Baru</h3>
+        <label>Nama ujian</label><input type="text" id="fNama" placeholder="contoh: PTS Ganjil 2026" autocomplete="off">
+        <label>Mata pelajaran</label><select id="fMapel"></select>
+        <label>Kelas <span class="grp"><button type="button" data-g="7">Semua 7</button><button type="button" data-g="8">Semua 8</button><button type="button" data-g="9">Semua 9</button><button type="button" data-g="x">Kosongkan</button></span></label>
+        <div id="fKelas" class="chips"></div>
+        <div class="row">
+          <div><label>Jumlah soal (1-50)</label><input type="number" id="fJumlah" min="1" max="50" value="50"></div>
+          <div><label>KKM</label><input type="number" id="fKkm" min="0" max="100" value="75"></div>
+        </div>
+        <label>Kunci jawaban <small id="fCount"></small></label>
+        <textarea id="fPaste" placeholder="Tempel cepat, contoh: ABCDABCDABCDABCDABCD"></textarea>
+        <div class="row"><button class="btn alt sm" id="btnPaste">Terapkan kunci tempel</button></div>
+        <div id="fKey" class="keys"></div>
+        <div class="hint" id="fWarn" hidden>Mengubah kunci akan menghitung ulang nilai yang sudah tersimpan untuk ujian ini.</div>
+        <div class="row"><button class="btn ok" id="btnSaveUj">Simpan Ujian</button><button class="btn alt" id="btnCancelUj">Batal</button></div>
+      </div>
+    </section>
+
+    <!-- Scan -->
+    <section id="vScan" class="view" hidden>
+      <div id="cvBar">Memuat OpenCV.js… mohon tunggu</div>
+      <div class="card">
+        <label>Ujian</label><select id="sUjian"></select>
+        <label>Kelas</label><select id="sKelas"></select>
+        <input type="search" id="sCari" placeholder="Cari nama siswa…" style="margin-top:8px">
+        <div id="stuList"></div>
+      </div>
+      <div class="status" id="selInfo">Pilih ujian, kelas, lalu siswa.</div>
+      <div class="card">
+        <div class="row">
+          <button class="btn" id="btnCam">Mulai Kamera</button>
+          <button class="btn ok" id="btnScan" disabled>Ambil &amp; Scan LJK</button>
+          <button class="btn alt" id="btnPhoto" style="flex-basis:100%">📷 Foto / Pilih Gambar (cadangan jika kamera diblokir)</button>
+          <input type="file" id="file" accept="image/*" capture="environment" hidden>
+        </div>
+        <label class="sl"><input type="checkbox" id="rt" checked> Mode real-time (scan otomatis terus-menerus)</label>
+        <label class="sl">Ambang isian: <b id="thrVal">40</b>% <input type="range" id="thr" min="20" max="75" value="40"></label>
+      </div>
+      <div class="cam"><video id="video" playsinline muted autoplay></video><canvas id="overlay"></canvas></div>
+      <div class="status" id="status">Tekan "Mulai Kamera", lalu arahkan ke LJK.</div>
+      <div id="resBox" hidden>
+        <canvas id="result"></canvas>
+        <div class="stat">
+          <div><b id="sBenar">0</b><small>Benar</small></div>
+          <div><b id="sSalah">0</b><small>Salah</small></div>
+          <div><b id="sSkor">0</b><small>Skor (0-100)</small></div>
+        </div>
+        <div class="hint">Ketuk kotak nomor untuk koreksi manual (A → B → C → D → kosong).</div>
+        <div id="grid"></div>
+        <div class="row"><button class="btn ok" id="btnSave" disabled>Simpan</button></div>
+      </div>
+    </section>
+
+    <!-- Rekap -->
+    <section id="vRekap" class="view" hidden>
+      <div class="card">
+        <label>Ujian</label><select id="rUjian"></select>
+        <label>Kelas</label><select id="rKelas"></select>
+        <div class="row"><button class="btn alt sm" id="btnReload">Muat ulang</button><button class="btn sm" id="btnCsv" disabled>Unduh CSV</button></div>
+      </div>
+      <div id="rkBody"></div>
+    </section>
+
+    <!-- Cetak -->
+    <section id="vCetak" class="view" hidden>
+      <div class="card noprint">
+        <label>Ujian (opsional, dicetak di kepala LJK; jumlah soal mengikuti ujian)</label><select id="cUjian"></select>
+        <label>Kelas</label><select id="cKelas"></select>
+        <label>Kertas cetak</label>
+        <select id="cKertas"><option value="f4">F4 (215 × 330 mm) — 2 LJK per lembar</option><option value="a4">A4 (210 × 297 mm) — 2 LJK per lembar (diperkecil)</option></select>
+        <div class="row">
+          <button class="btn alt" id="btnBlank">LJK kosong (1 lembar)</button>
+          <button class="btn" id="btnClass">LJK per siswa (satu kelas)</button>
+        </div>
+        <div class="row"><button class="btn ok" id="btnPrint" disabled>Cetak / Simpan PDF</button></div>
+        <div class="hint">Setiap lembar kertas berisi 2 LJK (atas &amp; bawah). Ukuran satu LJK = setengah F4 dikurangi margin 6 mm. Di dialog cetak pilih ukuran kertas yang sama, skala 100% (jangan "Fit to page"), margin None. Gunting di garis putus-putus tengah. Jangan memotong 4 kotak hitam dan garis hitam di bawah area jawaban.</div>
+      </div>
+      <div id="sheetsWrap"><div id="sheets"></div></div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* ============================================================
+     API: otomatis memakai google.script.run (di Apps Script)
+     atau fetch ke URL web app (jika di-hosting di Netlify dll).
+     Untuk hosting terpisah, isi API_URL dengan URL web app (/exec).
+     ============================================================ */
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzOC9HQ4QqVVYeaaWZPR_OPQoh17iQL1MJB88zmOj8x-X2rEJ0r6Th0hizcCyWuCintUQ/exec';
+  const GAS = () => !!(window.google && google.script && google.script.run);
+  function rawCall(action, data) {
+    return new Promise((ok, no) => {
+      if (GAS()) {
+        google.script.run.withSuccessHandler(ok)
+          .withFailureHandler(e => no(new Error(e && e.message ? e.message : String(e))))
+          .api(action, data || {});
+        return;
+      }
+      if (!/^https:\/\/script\.google\.com\//.test(API_URL)) { no(new Error('API_URL belum diisi dengan URL web app Apps Script (/exec).')); return; }
+      fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: action, data: data || {} }) })
+        .then(r => r.text())
+        .then(t => {
+          let j; try { j = JSON.parse(t); } catch (e) { throw new Error('Respon server bukan JSON. Pastikan web app di-deploy dengan akses "Siapa saja" (Anyone) dan sudah memakai VERSI BARU Code.gs.'); }
+          if (j.ok) ok(j.data); else no(new Error(j.error || 'Respon server tidak valid.'));
+        })
+        .catch(no);
+    });
+  }
+  function call(action, data, ms) {
+    ms = ms || 45000;
+    return new Promise((ok, no) => {
+      const t = setTimeout(() => no(new Error('Server tidak merespons dalam ' + Math.round(ms / 1000) + ' detik (mode: ' + (GAS() ? 'Apps Script' : 'URL eksternal') + '). Periksa: (1) web app di-deploy sebagai "Siapa saja", (2) sudah Deploy > Kelola deployment > Versi baru, (3) buka tab Executions di Apps Script untuk melihat galat.')), ms);
+      rawCall(action, data).then(v => { clearTimeout(t); ok(v); }, e => { clearTimeout(t); no(e); });
+    });
+  }
+  window.addEventListener('error', e => { const m = document.getElementById('lMsg'); if (m && !document.getElementById('loginView').hidden) { m.textContent = 'Kesalahan skrip: ' + e.message; m.className = 'status err'; m.hidden = false; } });
+  window.addEventListener('unhandledrejection', e => { const m = document.getElementById('lMsg'); if (m && !document.getElementById('loginView').hidden) { m.textContent = 'Kesalahan: ' + (e.reason && e.reason.message ? e.reason.message : e.reason); m.className = 'status err'; m.hidden = false; } });
+  const S = { guru: '', pin: '', info: { mapel: [], kelas: [] }, ujian: [] };
+  const authCall = (a, d) => call(a, Object.assign({ guru: S.guru, pin: S.pin }, d || {}));
+  let tt = null;
+  function toast(msg, cls) {
+    const t = $('toast'); t.textContent = msg; t.className = 'on ' + (cls || '');
+    clearTimeout(tt); tt = setTimeout(() => { t.className = ''; }, 3800);
+  }
+  const errMsg = e => (e && e.message) ? e.message : String(e);
+
+  /* ============================================================
+     KONFIGURASI TATA LETAK LJK (dipakai cetak DAN scanner)
+     Rasio terhadap persegi panjang pusat 4 kotak hitam sudut.
+     ============================================================ */
+  const MAX_SOAL = 50;
+  const F4W = 215, F4H = 330, A4W = 210, A4H = 297, MARGIN = 6;    // mm
+  const SW = F4W - 2 * MARGIN, SH = F4H / 2 - 2 * MARGIN;          // 203 x 153 mm = setengah F4 dikurangi margin
+  const AW = 193, AH = 96;                                          // jarak pusat 4 kotak sudut (mm)
+  const L = { colX: [5.5, 43, 80.5, 118, 155.5], optDX: 8.5, optStep: 7, optY: 4, y0: 12, yStep: 8.4, perCol: 10, total: MAX_SOAL, letters: ['A', 'B', 'C', 'D'] };
+  const ORI_FX = 0.35;                                              // posisi garis orientasi di tepi bawah area (pecahan lebar)
+  const PXMM = 6, PAD = 48, RW = Math.round(AW * PXMM), RH = Math.round(AH * PXMM), W = RW + 2 * PAD, H = RH + 2 * PAD, R_READ = 10;
+  function bub(q, j) {
+    const c = Math.floor(q / L.perCol), r = q % L.perCol;
+    return { fx: (L.colX[c] + L.optDX + j * L.optStep) / AW, fy: (L.y0 + r * L.yStep) / AH };
+  }
+  const toPx = p => ({ x: PAD + p.fx * RW, y: PAD + p.fy * RH });
+  const pct = v => (v * 100).toFixed(4) + '%';
+  let curPW = F4W, lastList = [];
+
+  /* ============================================================
+     NAVIGASI & LOGIN
+     ============================================================ */
+  function go(t) {
+    ['ujian', 'scan', 'rekap', 'cetak'].forEach(n => { $('v' + n[0].toUpperCase() + n.slice(1)).hidden = n !== t; });
+    document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    if (t !== 'scan') stopCam();
+    if (t === 'scan') { loadCv(); fillSelects(); }
+    if (t === 'rekap' || t === 'cetak') fillSelects();
+    if (t === 'cetak') zoomSheets();
+    window.scrollTo(0, 0);
+  }
+  document.querySelector('.nav').onclick = e => { const b = e.target.closest('button'); if (b) go(b.dataset.t); };
+
+  function showMsg(text) { const m = $('lMsg'); m.textContent = text; m.className = 'status err'; m.hidden = !text; }
+
+  async function bootLogin() {
+    $('dlGuru').innerHTML = '';
+    $('btnRetry').hidden = true; $('lInfo').hidden = true; showMsg('');
+    try {
+      const r = await call('init', {}, 25000);
+      $('dlGuru').innerHTML = r.guru.map(n => `<option value="${esc(n)}"></option>`).join('');
+      $('lInfo').hidden = false; $('lInfo').textContent = 'Sumber data: ' + (r.sumber || '-') + ' · ' + r.guru.length + ' guru';
+      if (!r.guru.length) { showMsg('Daftar guru kosong. Isi kolom Nama_Guru dan PIN pada sheet "Guru" di spreadsheet "' + (r.sumber || '?') + '". Jika spreadsheet itu bukan milik Anda, isi SPREADSHEET_ID di Code.gs.'); $('btnRetry').hidden = false; return; }
+      let saved = null;
+      try { saved = JSON.parse(sessionStorage.getItem('ljk') || 'null'); } catch (e) { }
+      if (saved) { $('lGuru').value = saved.g; $('lPin').value = saved.p; doLogin(true); }
+    } catch (e) { showMsg('Daftar guru gagal dimuat (' + errMsg(e) + '). Anda tetap bisa mengetik nama guru lalu klik Masuk.'); $('btnRetry').hidden = false; }
+  }
+  $('btnRetry').onclick = bootLogin;
+  async function doLogin(silent) {
+    const g = $('lGuru').value.replace(/\s+/g, ' ').trim(), pin = $('lPin').value.trim();
+    if (!g || !pin) { showMsg('Ketik/pilih nama guru dan isi PIN.'); return; }
+    $('btnLogin').disabled = true; showMsg('');
+    try {
+      const r = await call('login', { guru: g, pin: pin });
+      S.guru = r.nama; S.pin = pin; S.info = r; $('lGuru').value = r.nama;
+      try { sessionStorage.setItem('ljk', JSON.stringify({ g: g, p: pin })); } catch (e) { }
+      $('gName').textContent = r.nama;
+      $('loginView').hidden = true; $('appView').hidden = false;
+      await loadUjian();
+      go('ujian');
+    } catch (e) { if (!silent) showMsg(errMsg(e)); try { sessionStorage.removeItem('ljk'); } catch (x) { } }
+    $('btnLogin').disabled = false;
+  }
+  $('btnLogin').onclick = () => doLogin(false);
+  $('lGuru').onkeydown = e => { if (e.key === 'Enter') $('lPin').focus(); };
+  $('lPin').onkeydown = e => { if (e.key === 'Enter') doLogin(false); };
+  $('btnOut').onclick = () => {
+    stopCam(); S.guru = ''; S.pin = ''; S.ujian = [];
+    try { sessionStorage.removeItem('ljk'); } catch (e) { }
+    $('lPin').value = ''; $('appView').hidden = true; $('loginView').hidden = false;
+  };
+
+  /* ============================================================
+     UJIAN & KUNCI
+     ============================================================ */
+  async function loadUjian() { S.ujian = await authCall('ujianList'); renderUjian(); }
+  function renderUjian() {
+    $('ujList').innerHTML = S.ujian.length ? S.ujian.map(u => `<div class="card"><b>${esc(u.nama)}</b>
+      <div class="sub">${esc(u.mapel)} · Kelas ${esc(u.kelas.join(', '))} · ${u.jumlah} soal · KKM ${u.kkm}</div>
+      <div class="row"><button class="btn sm ok" data-a="scan" data-id="${esc(u.id)}">Scan</button>
+      <button class="btn sm" data-a="rekap" data-id="${esc(u.id)}">Rekap</button>
+      <button class="btn sm alt" data-a="edit" data-id="${esc(u.id)}">Edit kunci</button></div></div>`).join('')
+      : '<div class="hint">Belum ada ujian. Buat ujian baru untuk memasukkan kunci jawaban.</div>';
+  }
+  $('ujList').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const id = b.dataset.id;
+    if (b.dataset.a === 'edit') openForm(S.ujian.find(u => u.id === id));
+    if (b.dataset.a === 'scan') { go('scan'); $('sUjian').value = id; onSUjian(); }
+    if (b.dataset.a === 'rekap') { go('rekap'); $('rUjian').value = id; onRUjian(); }
+  };
+
+  let fKey = [], fId = '';
+  function renderKey() {
+    const n = Math.max(1, Math.min(MAX_SOAL, parseInt($('fJumlah').value, 10) || 1));
+    fKey.length = n; for (let i = 0; i < n; i++) if (!fKey[i]) fKey[i] = '';
+    $('fKey').innerHTML = fKey.map((k, i) => `<div class="kr"><b>${i + 1}</b>${L.letters.map(l => `<button type="button" data-i="${i}" data-l="${l}" class="${k === l ? 'on' : ''}">${l}</button>`).join('')}</div>`).join('');
+    $('fCount').textContent = '(' + fKey.filter(Boolean).length + '/' + n + ' terisi)';
+  }
+  $('fKey').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const i = +b.dataset.i; fKey[i] = fKey[i] === b.dataset.l ? '' : b.dataset.l; renderKey();
+  };
+  $('fJumlah').oninput = renderKey;
+  $('btnPaste').onclick = () => {
+    const s = $('fPaste').value.toUpperCase().replace(/[^ABCD]/g, '');
+    if (!s) { toast('Tidak ada huruf A-D pada teks.', 'err'); return; }
+    $('fJumlah').value = Math.min(MAX_SOAL, s.length);
+    fKey = s.slice(0, MAX_SOAL).split(''); renderKey();
+    if (s.length > MAX_SOAL) toast('Hanya ' + MAX_SOAL + ' soal pertama yang dipakai.', '');
+  };
+  function chipsRender(sel) {
+    $('fKelas').innerHTML = S.info.kelas.map(k => `<label class="${sel.includes(k) ? 'on' : ''}"><input type="checkbox" value="${esc(k)}" ${sel.includes(k) ? 'checked' : ''}>${esc(k)}</label>`).join('') || '<div class="hint">Belum ada data kelas di sheet Siswa.</div>';
+  }
+  $('fKelas').onchange = e => { e.target.parentNode.classList.toggle('on', e.target.checked); };
+  const grp = () => document.querySelector('.grp');
+  grp().onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll('#fKelas input').forEach(i => {
+      if (b.dataset.g === 'x') i.checked = false;
+      else if (i.value.charAt(0) === b.dataset.g) i.checked = true;
+      i.parentNode.classList.toggle('on', i.checked);
+    });
+  };
+  function openForm(u) {
+    fId = u ? u.id : '';
+    $('ujTitle').textContent = u ? 'Edit Ujian' : 'Ujian Baru';
+    $('fNama').value = u ? u.nama : '';
+    $('fMapel').innerHTML = S.info.mapel.map(m => `<option>${esc(m)}</option>`).join('');
+    if (u) $('fMapel').value = u.mapel;
+    chipsRender(u ? u.kelas : []);
+    $('fJumlah').value = u ? u.jumlah : MAX_SOAL; $('fKkm').value = u ? u.kkm : 75;
+    fKey = u ? u.kunci.slice() : []; $('fPaste').value = '';
+    $('fWarn').hidden = !u; renderKey();
+    $('ujForm').hidden = false; $('ujForm').scrollIntoView({ behavior: 'smooth' });
+  }
+  $('btnNew').onclick = () => openForm(null);
+  $('btnCancelUj').onclick = () => { $('ujForm').hidden = true; };
+  $('btnSaveUj').onclick = async () => {
+    const kelas = Array.from(document.querySelectorAll('#fKelas input:checked')).map(i => i.value);
+    const btn = $('btnSaveUj'); btn.disabled = true;
+    try {
+      S.ujian = await authCall('saveUjian', { data: { id: fId, nama: $('fNama').value, mapel: $('fMapel').value, kelas: kelas, jumlah: $('fJumlah').value, kkm: $('fKkm').value, kunci: fKey } });
+      renderUjian(); $('ujForm').hidden = true; toast('Ujian tersimpan.', 'ok');
+    } catch (e) { toast(errMsg(e), 'err'); }
+    btn.disabled = false;
+  };
+
+  /* ============================================================
+     SELECT UJIAN / KELAS (Scan, Rekap, Cetak)
+     ============================================================ */
+  function ujianOpts(withBlank) {
+    return (withBlank ? '<option value="">— tanpa ujian —</option>' : (S.ujian.length ? '' : '<option value="">(buat ujian dulu)</option>')) +
+      S.ujian.map(u => `<option value="${esc(u.id)}">${esc(u.nama)} — ${esc(u.mapel)}</option>`).join('');
+  }
+  function fillSelects() {
+    const keep = [$('sUjian').value, $('rUjian').value, $('cUjian').value];
+    $('sUjian').innerHTML = ujianOpts(); $('rUjian').innerHTML = ujianOpts(); $('cUjian').innerHTML = ujianOpts(true);
+    if (S.ujian.some(u => u.id === keep[0])) $('sUjian').value = keep[0];
+    if (S.ujian.some(u => u.id === keep[1])) $('rUjian').value = keep[1];
+    if (S.ujian.some(u => u.id === keep[2])) $('cUjian').value = keep[2];
+    const nu = uById($('sUjian').value);
+    if (nu && cur.ujian && nu.id === cur.ujian.id) cur.ujian = nu;
+    if (!$('sKelas').options.length) onSUjian();
+    if (!$('rKelas').options.length) onRUjian();
+    if (!$('cKelas').options.length) onCUjian();
+  }
+  const uById = id => S.ujian.find(u => u.id === id) || null;
+  const kelasOpts = arr => arr.map(k => `<option>${esc(k)}</option>`).join('');
+
+  /* ============================================================
+     SCAN: pilih siswa
+     ============================================================ */
+  const cur = { ujian: null, kelas: '', siswa: [], sel: null };
+  let lastRatios = null, answers = [], saved = false, holdSig = null, saving = false;
+
+  function resetResult() { lastRatios = null; answers = []; saved = false; $('resBox').hidden = true; }
+  function onSUjian() {
+    cur.ujian = uById($('sUjian').value); cur.siswa = []; cur.sel = null;
+    $('sKelas').innerHTML = cur.ujian ? kelasOpts(cur.ujian.kelas) : '';
+    resetResult(); loadStudents();
+  }
+  async function loadStudents() {
+    cur.kelas = $('sKelas').value; cur.siswa = []; cur.sel = null; renderStu();
+    if (!cur.ujian || !cur.kelas) return;
+    $('stuList').innerHTML = '<div class="st">Memuat daftar siswa…</div>';
+    try { cur.siswa = await authCall('siswaKelas', { idUjian: cur.ujian.id, kelas: cur.kelas }); renderStu(); pickNext(-1); }
+    catch (e) { $('stuList').innerHTML = ''; toast(errMsg(e), 'err'); }
+  }
+  function renderStu() {
+    const q = $('sCari').value.trim().toLowerCase();
+    $('stuList').innerHTML = cur.siswa.map((s, i) => ({ s: s, i: i })).filter(x => !q || x.s.nama.toLowerCase().includes(q) || x.s.nomor.includes(q))
+      .map(x => `<div class="st ${x.s.skor != null ? 'done' : ''} ${cur.sel === x.s.nomor ? 'sel' : ''}" data-n="${esc(x.s.nomor)}"><span>${x.i + 1}. ${esc(x.s.nama)}</span><b>${x.s.skor != null ? x.s.skor : ''}</b></div>`).join('')
+      || '<div class="st">Tidak ada siswa. Isi sheet Siswa untuk kelas ini.</div>';
+    updSel();
+  }
+  function updSel() {
+    const s = cur.siswa.find(x => x.nomor === cur.sel);
+    $('selInfo').textContent = s ? 'Memindai: ' + s.nama + ' (' + s.nomor + ')' : 'Pilih ujian, kelas, lalu siswa.';
+    $('selInfo').className = 'status ' + (s ? 'ok' : '');
+    updSave();
+  }
+  function updSave() {
+    const s = cur.siswa.find(x => x.nomor === cur.sel);
+    $('btnSave').disabled = !(lastRatios && s) || saving || saved;
+    $('btnSave').textContent = saved ? 'Sudah tersimpan ✔' : (s ? 'Simpan untuk ' + s.nama : 'Pilih siswa dulu');
+  }
+  $('stuList').onclick = e => {
+    const el = e.target.closest('.st'); if (!el || !el.dataset.n) return;
+    cur.sel = el.dataset.n; renderStu();
+  };
+  function pickNext(fromIdx) {
+    let n = null;
+    for (let i = fromIdx + 1; i < cur.siswa.length; i++) if (cur.siswa[i].skor == null) { n = cur.siswa[i].nomor; break; }
+    if (n === null && fromIdx < 0) n = cur.siswa.length ? cur.siswa[0].nomor : null;
+    cur.sel = n; renderStu();
+    const el = $('stuList').querySelector('.sel'); if (el) el.scrollIntoView({ block: 'nearest' });
+  }
+  $('sUjian').onchange = onSUjian; $('sKelas').onchange = () => { resetResult(); loadStudents(); }; $('sCari').oninput = renderStu;
+
+  /* ============================================================
+     OPENCV.JS
+     ============================================================ */
+  let cvReady = false, cvLoading = false;
+  function onCvReady() {
+    cvReady = true; $('cvBar').className = 'ok'; $('cvBar').textContent = 'OpenCV.js siap digunakan ✔';
+    if (stream) $('btnScan').disabled = false;
+    setTimeout(() => { $('cvBar').hidden = true; }, 2500);
+  }
+  function loadCv() {
+    if (cvLoading) return; cvLoading = true;
+    const s = document.createElement('script'); s.async = true; s.src = 'https://docs.opencv.org/4.8.0/opencv.js';
+    s.onload = () => {
+      if (window.cv && typeof window.cv.then === 'function') window.cv.then(m => { window.cv = m; onCvReady(); });
+      else if (window.cv && window.cv.Mat) onCvReady();
+      else window.cv.onRuntimeInitialized = onCvReady;
+    };
+    s.onerror = () => { cvLoading = false; $('cvBar').className = 'err'; $('cvBar').textContent = 'Gagal memuat OpenCV.js. Periksa internet lalu buka ulang tab Scan.'; };
+    document.head.appendChild(s);
+  }
+
+  /* ============================================================
+     KAMERA
+     ============================================================ */
+  const video = $('video'), overlay = $('overlay'), cap = document.createElement('canvas'), base = document.createElement('canvas');
+  let stream = null, timer = null, busy = false, useImg = null;
+  function setStatus(msg, cls) { const el = $('status'); el.textContent = msg; el.className = 'status ' + (cls || ''); }
+
+  function startCam() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setStatus('Kamera tidak tersedia di browser ini (butuh HTTPS).', 'err'); return; }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false })
+      .then(st => { stream = st; video.srcObject = st; return video.play(); })
+      .then(() => { $('btnCam').textContent = 'Matikan Kamera'; $('btnScan').disabled = !cvReady; setStatus('Arahkan kamera hingga 4 kotak sudut LJK terlihat jelas.', 'warn'); loop(); })
+      .catch(err => { stream = null; setStatus('Kamera gagal dibuka: ' + errMsg(err) + '. Izinkan akses kamera, atau pakai tombol "Foto / Pilih Gambar".', 'err'); });
+  }
+  function stopCam() {
+    clearTimeout(timer);
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = null; video.srcObject = null;
+    overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+    $('btnCam').textContent = 'Mulai Kamera'; $('btnScan').disabled = true;
+  }
+  $('btnCam').onclick = () => { if (stream) stopCam(); else startCam(); };
+
+  /* ============================================================
+     PENGOLAHAN CITRA (tidak berubah dari versi yang sudah bekerja)
+     ============================================================ */
+  function grab() {
+    const el = useImg || video;
+    const vw = useImg ? useImg.naturalWidth : video.videoWidth, vh = useImg ? useImg.naturalHeight : video.videoHeight;
+    const s = Math.min(1, (useImg ? 2000 : 1280) / Math.max(vw, vh));
+    cap.width = Math.round(vw * s); cap.height = Math.round(vh * s);
+    cap.getContext('2d').drawImage(el, 0, 0, cap.width, cap.height);
+    return cv.imread(cap);
+  }
+  function orderPts(q) {
+    let tl = q[0], br = q[0], tr = q[0], bl = q[0];
+    for (let i = 1; i < 4; i++) {
+      if (q[i].x + q[i].y < tl.x + tl.y) tl = q[i];
+      if (q[i].x + q[i].y > br.x + br.y) br = q[i];
+      if (q[i].x - q[i].y > tr.x - tr.y) tr = q[i];
+      if (q[i].x - q[i].y < bl.x - bl.y) bl = q[i];
+    }
+    const set = [tl, tr, br, bl];
+    for (let i = 0; i < 4; i++) for (let k = i + 1; k < 4; k++) if (set[i] === set[k]) return null;
+    return set;
+  }
+  function polyArea(p) { let a = 0; for (let i = 0; i < 4; i++) { const n = p[(i + 1) % 4]; a += p[i].x * n.y - n.x * p[i].y; } return Math.abs(a) / 2; }
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  function pickQuad(cand) {
+    if (cand.length < 4) return null;
+    cand.sort((a, b) => b.a - a.a); cand = cand.slice(0, 8);
+    let best = null, bestA = 0;
+    for (let a = 0; a < cand.length; a++) for (let b = a + 1; b < cand.length; b++) for (let c = b + 1; c < cand.length; c++) for (let d = c + 1; d < cand.length; d++) {
+      const q = [cand[a], cand[b], cand[c], cand[d]];
+      const mx = Math.max(q[0].a, q[1].a, q[2].a, q[3].a), mn = Math.min(q[0].a, q[1].a, q[2].a, q[3].a);
+      if (mx / mn > 1.9) continue;
+      const o = orderPts(q); if (!o) continue;
+      const ar = polyArea(o); if (ar > bestA) { bestA = ar; best = o; }
+    }
+    return best;
+  }
+  function analyze(full) {
+    const mats = []; const T = x => { mats.push(x); return x; };
+    const out = { pts: null, msg: '', cls: 'warn', ok: false, data: null, w: 0, h: 0 };
+    try {
+      const src = T(grab()); out.w = src.cols; out.h = src.rows;
+      const gray = T(new cv.Mat()), bl = T(new cv.Mat()), bin = T(new cv.Mat());
+      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+      cv.GaussianBlur(gray, bl, new cv.Size(5, 5), 0);
+      let bs = Math.max(51, Math.round(Math.max(src.cols, src.rows) * 0.08)); if (bs % 2 === 0) bs++;
+      cv.adaptiveThreshold(bl, bin, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, bs, 15);
+      const cs = T(new cv.MatVector()), hi = T(new cv.Mat());
+      cv.findContours(bin, cs, hi, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+      const cand = [], ia = src.cols * src.rows;
+      for (let i = 0; i < cs.size(); i++) {
+        const c = cs.get(i), a = cv.contourArea(c);
+        if (a >= ia * 0.0002 && a <= ia * 0.02) {
+          const ap = new cv.Mat();
+          cv.approxPolyDP(c, ap, 0.06 * cv.arcLength(c, true), true);
+          const isQuad = ap.rows === 4 && cv.isContourConvex(ap); ap.delete();
+          if (isQuad) {
+            const r = cv.boundingRect(c), ar = r.width / r.height;
+            if (ar > 0.6 && ar < 1.6) {
+              const roi = bin.roi(new cv.Rect(Math.round(r.x + r.width * 0.3), Math.round(r.y + r.height * 0.3), Math.max(1, Math.round(r.width * 0.4)), Math.max(1, Math.round(r.height * 0.4))));
+              const fill = cv.countNonZero(roi) / (roi.cols * roi.rows); roi.delete();
+              if (fill > 0.8) cand.push({ x: r.x + r.width / 2, y: r.y + r.height / 2, a: a });
+            }
+          }
+        }
+        c.delete();
+      }
+      const quad = pickQuad(cand);
+      if (!quad) { out.msg = 'Arahkan kamera hingga 4 kotak sudut LJK terlihat jelas (terdeteksi ' + Math.min(cand.length, 3) + '/4).'; return out; }
+      out.pts = quad;
+      const ratio = ((dist(quad[0], quad[1]) + dist(quad[3], quad[2])) / 2) / ((dist(quad[0], quad[3]) + dist(quad[1], quad[2])) / 2);
+      if (polyArea(quad) < ia * 0.06) { out.msg = 'LJK terlalu jauh. Dekatkan kamera hingga 4 kotak sudut memenuhi layar.'; return out; }
+      if (ratio < 1.25) { out.msg = 'Posisikan LJK mendatar (landscape) dengan tulisan "LEMBAR JAWAB" di bagian atas.'; return out; }
+      out.ok = true; out.cls = 'ok'; out.msg = '4 kotak sudut terdeteksi ✔ ' + (full ? '' : 'Tekan "Ambil & Scan LJK".');
+      if (!full) return out;
+      const sp = T(cv.matFromArray(4, 1, cv.CV_32FC2, [quad[0].x, quad[0].y, quad[1].x, quad[1].y, quad[2].x, quad[2].y, quad[3].x, quad[3].y]));
+      const dp = T(cv.matFromArray(4, 1, cv.CV_32FC2, [PAD, PAD, W - PAD, PAD, W - PAD, H - PAD, PAD, H - PAD]));
+      const M = T(cv.getPerspectiveTransform(sp, dp));
+      let wr = T(new cv.Mat());
+      cv.warpPerspective(src, wr, M, new cv.Size(W, H), cv.INTER_LINEAR, cv.BORDER_REPLICATE, new cv.Scalar());
+      const wg = T(new cv.Mat()), wb = T(new cv.Mat());
+      let wbin = T(new cv.Mat());
+      cv.cvtColor(wr, wg, cv.COLOR_RGBA2GRAY); cv.GaussianBlur(wg, wb, new cv.Size(3, 3), 0);
+      cv.adaptiveThreshold(wb, wbin, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 71, 14);
+      // Orientasi: garis hitam tebal harus ada di tepi bawah. Jika justru ada di tepi atas, LJK terbalik 180 derajat -> putar.
+      const barDark = (fx, fy) => {
+        const cx = Math.round(PAD + fx * RW), cy = Math.round(PAD + fy * RH); let best = 0;
+        for (let dy = -4; dy <= 4; dy += 2) {
+          const r = wbin.roi(new cv.Rect(cx - 50, cy + dy - 3, 100, 7)), v = cv.countNonZero(r) / 700; r.delete(); if (v > best) best = v;
+        }
+        return best;
+      };
+      const d1 = barDark(ORI_FX, 1), d2 = barDark(1 - ORI_FX, 0);
+      if (d1 < 0.5 && d2 >= 0.5) {
+        const wr2 = T(new cv.Mat()), wbin2 = T(new cv.Mat());
+        cv.flip(wr, wr2, -1); cv.flip(wbin, wbin2, -1); wr = wr2; wbin = wbin2;
+      } else if (d1 < 0.5) { out.ok = false; out.cls = 'warn'; out.msg = 'Garis hitam di bawah area jawaban tidak terbaca. Pastikan seluruh LJK (4 kotak sudut + garis hitam bawah) terlihat jelas dan cahaya merata, lalu ulangi.'; return out; }
+      const mask = T(cv.Mat.zeros(2 * R_READ + 1, 2 * R_READ + 1, cv.CV_8UC1));
+      cv.circle(mask, new cv.Point(R_READ, R_READ), R_READ, new cv.Scalar(255), -1);
+      const mcount = cv.countNonZero(mask), ratios = [];
+      for (let q = 0; q < L.total; q++) {
+        const row = [];
+        for (let j = 0; j < 4; j++) {
+          const p = toPx(bub(q, j));
+          const rr = wbin.roi(new cv.Rect(Math.round(p.x) - R_READ, Math.round(p.y) - R_READ, 2 * R_READ + 1, 2 * R_READ + 1)), tmp = new cv.Mat();
+          cv.bitwise_and(rr, mask, tmp); row.push(cv.countNonZero(tmp) / mcount); rr.delete(); tmp.delete();
+        }
+        ratios.push(row);
+      }
+      cv.imshow(base, wr); out.data = { ratios: ratios };
+      return out;
+    } catch (e) {
+      console.error(e); out.ok = false; out.cls = 'err'; out.msg = 'Terjadi kesalahan pemrosesan gambar: ' + errMsg(e); return out;
+    } finally { mats.forEach(m => { try { m.delete(); } catch (x) { } }); }
+  }
+  function drawOverlay(o) {
+    overlay.width = o.w || overlay.width; overlay.height = o.h || overlay.height;
+    const ctx = overlay.getContext('2d'); ctx.clearRect(0, 0, overlay.width, overlay.height);
+    if (!o.pts) return;
+    ctx.strokeStyle = o.ok ? '#22c55e' : '#f59e0b'; ctx.fillStyle = ctx.strokeStyle; ctx.lineWidth = Math.max(3, overlay.width / 200);
+    ctx.beginPath(); o.pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }); ctx.closePath(); ctx.stroke();
+    o.pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, ctx.lineWidth * 2.5, 0, 6.2832); ctx.fill(); });
+  }
+  function flat(r) { return [].concat.apply([], r); }
+  function sameSheet(a, b) { if (!a || !b) return false; const x = flat(a), y = flat(b); let d = 0; for (let i = 0; i < x.length; i++) d += Math.abs(x[i] - y[i]); return d / x.length < 0.03; }
+
+  function loop() {
+    clearTimeout(timer); if (!stream) return;
+    if (!busy && cvReady && video.videoWidth) {
+      busy = true;
+      try {
+        const rt = $('rt').checked, o = analyze(rt && !!cur.ujian);
+        drawOverlay(o);
+        if (!o.ok) holdSig = null;
+        if (rt && o.ok && o.data) {
+          if (holdSig && sameSheet(holdSig, o.data.ratios)) setStatus('LJK sudah tersimpan. Ganti dengan LJK berikutnya…', 'warn');
+          else { holdSig = null; setStatus(o.msg, o.cls); showResult(o.data); }
+        } else setStatus(!cur.ujian && o.ok ? 'Pilih ujian dan siswa terlebih dahulu.' : o.msg, !cur.ujian && o.ok ? 'warn' : o.cls);
+      } catch (e) { console.error(e); }
+      busy = false;
+    }
+    timer = setTimeout(loop, $('rt').checked ? 700 : 300);
+  }
+  $('btnScan').onclick = () => {
+    if (!stream || !cvReady || busy) return;
+    if (!cur.ujian) { setStatus('Pilih ujian dan siswa terlebih dahulu.', 'warn'); return; }
+    busy = true; const o = analyze(true); drawOverlay(o);
+    setStatus(o.ok ? 'Scan berhasil. Periksa preview lalu simpan.' : o.msg, o.ok ? 'ok' : o.cls); busy = false;
+    if (o.ok && o.data) { holdSig = null; showResult(o.data); $('resBox').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  };
+  $('btnPhoto').onclick = () => $('file').click();
+  $('file').onchange = function () {
+    const f = this.files && this.files[0]; this.value = ''; if (!f) return;
+    if (!cur.ujian) { setStatus('Pilih ujian dan siswa terlebih dahulu.', 'warn'); return; }
+    loadCv();
+    if (!cvReady) { setStatus('OpenCV.js belum siap, tunggu sebentar lalu coba lagi.', 'warn'); return; }
+    const url = URL.createObjectURL(f), img = new Image();
+    img.onload = () => {
+      useImg = img; busy = true; const o = analyze(true); useImg = null; busy = false; URL.revokeObjectURL(url);
+      setStatus(o.ok ? 'Scan dari foto berhasil. Periksa preview lalu simpan.' : o.msg, o.ok ? 'ok' : o.cls);
+      if (o.ok && o.data) { holdSig = null; showResult(o.data); $('resBox').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); setStatus('Gambar tidak dapat dibaca.', 'err'); };
+    img.src = url;
+  };
+
+  /* ============================================================
+     HASIL SCAN: nilai, preview, simpan
+     ============================================================ */
+  function interpret() {
+    const thr = parseInt($('thr').value, 10) / 100;
+    answers = lastRatios.map(row => { const m = []; row.forEach((v, j) => { if (v >= thr) m.push(j); }); return m.length === 0 ? '-' : (m.length > 1 ? 'GANDA' : L.letters[m[0]]); });
+  }
+  function showResult(data) { lastRatios = data.ratios; saved = false; interpret(); $('resBox').hidden = false; renderAll(); }
+  function score() {
+    const n = cur.ujian.jumlah, k = cur.ujian.kunci; let b = 0;
+    for (let i = 0; i < n; i++) if (k[i] && answers[i] === k[i]) b++;
+    return { benar: b, salah: n - b, skor: Math.round(b * 100 / n) };
+  }
+  function drawPreview() {
+    const ctx = $('result').getContext('2d'), thr = parseInt($('thr').value, 10) / 100, n = cur.ujian.jumlah, kunci = cur.ujian.kunci;
+    ctx.drawImage(base, 0, 0, W, H);
+    for (let q = 0; q < n; q++) {
+      const ans = answers[q], key = kunci[q] || '', kj = L.letters.indexOf(key);
+      for (let j = 0; j < 4; j++) {
+        const p = toPx(bub(q, j));
+        ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(14,165,233,.85)'; ctx.beginPath(); ctx.arc(p.x, p.y, R_READ, 0, 6.2832); ctx.stroke();
+        const chosen = ans === L.letters[j], dbl = ans === 'GANDA' && lastRatios[q][j] >= thr;
+        if (chosen || dbl) { ctx.lineWidth = 5; ctx.strokeStyle = dbl ? '#f59e0b' : (ans === key ? '#16a34a' : '#dc2626'); ctx.beginPath(); ctx.arc(p.x, p.y, R_READ + 3, 0, 6.2832); ctx.stroke(); }
+      }
+      if (kj >= 0 && ans !== key) {
+        const k = toPx(bub(q, kj)); ctx.lineWidth = 3; ctx.strokeStyle = '#16a34a'; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.arc(k.x, k.y, R_READ + 7, 0, 6.2832); ctx.stroke(); ctx.setLineDash([]);
+      }
+    }
+  }
+  function renderAll() {
+    if (!lastRatios || !cur.ujian) return;
+    const s = score(), n = cur.ujian.jumlah;
+    $('sBenar').textContent = s.benar; $('sSalah').textContent = s.salah; $('sSkor').textContent = s.skor;
+    let h = '';
+    for (let i = 0; i < n; i++) { const a = answers[i], k = cur.ujian.kunci[i] || '?'; h += `<div class="c ${a === k ? 'ok' : 'bad'}" data-i="${i}"><b>No. ${i + 1}</b><span>${a}</span><small>kunci ${k}</small></div>`; }
+    $('grid').innerHTML = h; drawPreview(); updSave();
+  }
+  $('grid').onclick = e => {
+    const el = e.target.closest('.c'); if (!el) return;
+    const i = parseInt(el.dataset.i, 10), order = ['A', 'B', 'C', 'D', '-'];
+    answers[i] = order[(order.indexOf(answers[i]) + 1) % order.length]; saved = false; renderAll();
+  };
+  $('thr').oninput = () => { $('thrVal').textContent = $('thr').value; if (lastRatios) { interpret(); saved = false; renderAll(); } };
+  $('btnSave').onclick = async () => {
+    const s = cur.siswa.find(x => x.nomor === cur.sel);
+    if (!lastRatios || !s || !cur.ujian) return;
+    saving = true; $('btnSave').disabled = true; $('btnSave').textContent = 'Menyimpan…';
+    try {
+      const r = await authCall('simpan', { idUjian: cur.ujian.id, kelas: cur.kelas, nomor: s.nomor, jawaban: answers.slice(0, cur.ujian.jumlah) });
+      s.skor = r.skor; s.benar = r.benar; saved = true; holdSig = lastRatios;
+      toast(s.nama + ': skor ' + r.skor + (r.diperbarui ? ' (nilai lama diperbarui)' : ' tersimpan'), 'ok');
+      const idx = cur.siswa.indexOf(s); renderStu(); pickNext(idx);
+      saved = true; updSave(); $('btnSave').textContent = 'Sudah tersimpan ✔';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) { toast(errMsg(e), 'err'); }
+    saving = false; updSave();
+  };
+
+  /* ============================================================
+     REKAP
+     ============================================================ */
+  let rekapData = null;
+  function onRUjian() { const u = uById($('rUjian').value); $('rKelas').innerHTML = u ? kelasOpts(u.kelas) : ''; loadRekap(); }
+  async function loadRekap() {
+    rekapData = null; $('btnCsv').disabled = true;
+    const id = $('rUjian').value, kelas = $('rKelas').value;
+    if (!id || !kelas) { $('rkBody').innerHTML = '<div class="hint">Pilih ujian dan kelas.</div>'; return; }
+    $('rkBody').innerHTML = '<div class="hint">Memuat rekap…</div>';
+    try { rekapData = await authCall('rekap', { idUjian: id, kelas: kelas }); renderRekap(rekapData); $('btnCsv').disabled = false; }
+    catch (e) { $('rkBody').innerHTML = ''; toast(errMsg(e), 'err'); }
+  }
+  function renderRekap(r) {
+    const st = r.stat, v = x => x == null ? '-' : x;
+    let h = '<div class="stat">' + [['Rata-rata', v(st.rata)], ['Tertinggi', v(st.max)], ['Terendah', v(st.min)], ['Tuntas (KKM ' + r.ujian.kkm + ')', st.tuntas + '/' + st.sudah], ['Sudah dinilai', st.sudah + '/' + st.total]]
+      .map(x => `<div><b>${x[1]}</b><small>${x[0]}</small></div>`).join('') + '</div>';
+    h += '<div class="tw"><table class="rk"><tr><th>No</th><th>Nama</th><th>Benar</th><th>Salah</th><th>Skor</th><th>Ket.</th></tr>' +
+      r.rows.map((s, i) => { const ket = s.skor == null ? '<span class="bl">Belum</span>' : (s.skor >= r.ujian.kkm ? '<span class="tu">Tuntas</span>' : '<span class="rm">Remedial</span>'); return `<tr><td>${i + 1}</td><td>${esc(s.nama)}</td><td>${v(s.benar)}</td><td>${v(s.salah)}</td><td><b>${v(s.skor)}</b></td><td>${ket}</td></tr>`; }).join('') + '</table></div>';
+    if (st.sudah) {
+      h += '<div class="card" style="margin-top:10px"><h3>Analisis butir soal</h3><div class="sub">Persentase siswa yang menjawab benar (merah: sulit, hijau: mudah)</div>' +
+        r.butir.map((p, i) => `<div class="bt"><span>Soal ${i + 1}</span><div class="bar"><i style="width:${p}%;background:${p < 40 ? '#dc2626' : (p < 70 ? '#f59e0b' : '#16a34a')}"></i></div><b>${p}%</b></div>`).join('') + '</div>';
+    }
+    $('rkBody').innerHTML = h;
+  }
+  $('rUjian').onchange = onRUjian; $('rKelas').onchange = loadRekap; $('btnReload').onclick = loadRekap;
+  $('btnCsv').onclick = () => {
+    if (!rekapData) return;
+    const r = rekapData, q = x => { let t = String(x == null ? '' : x); if (/^[=+@\-]/.test(t) && isNaN(Number(t))) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
+    const head = ['No', 'Nomor_Peserta', 'Nama', 'Kelas', 'Benar', 'Salah', 'Skor', 'Keterangan'];
+    for (let i = 1; i <= r.ujian.jumlah; i++) head.push('S' + i);
+    const lines = [head.map(q).join(';')];
+    r.rows.forEach((s, i) => {
+      const ket = s.skor == null ? 'Belum' : (s.skor >= r.ujian.kkm ? 'Tuntas' : 'Remedial');
+      const row = [i + 1, s.nomor, s.nama, r.kelas, s.benar, s.salah, s.skor, ket];
+      for (let k = 0; k < r.ujian.jumlah; k++) row.push(s.jawaban[k] || '');
+      lines.push(row.map(q).join(';'));
+    });
+    const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'rekap_' + r.ujian.nama.replace(/[^\w]+/g, '_') + '_' + r.kelas + '.csv';
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  };
+
+  /* ============================================================
+     CETAK LJK
+     ============================================================ */
+  const MM2PX = 96 / 25.4, areaCache = {};
+  function areaHTML(n) {
+    if (areaCache[n]) return areaCache[n];
+    let h = '';
+    [[0, 0], [1, 0], [1, 1], [0, 1]].forEach(c => { h += `<div class="mk" style="left:${pct(c[0])};top:${pct(c[1])}"></div>`; });
+    h += `<div class="ori" style="left:${pct(ORI_FX)};top:${pct(1)}"></div>`;
+    for (let c = 0; c < Math.ceil(n / L.perCol); c++) for (let j = 0; j < 4; j++) h += `<div class="opt" style="left:${pct((L.colX[c] + L.optDX + j * L.optStep) / AW)};top:${pct(L.optY / AH)}">${L.letters[j]}</div>`;
+    for (let q = 0; q < n; q++) {
+      const c = Math.floor(q / L.perCol), r = q % L.perCol;
+      h += `<div class="num" style="left:${pct(L.colX[c] / AW)};top:${pct((L.y0 + r * L.yStep) / AH)}">${q + 1}</div>`;
+      for (let j = 0; j < 4; j++) { const p = bub(q, j); h += `<div class="bub" style="left:${pct(p.fx)};top:${pct(p.fy)}"></div>`; }
+    }
+    return (areaCache[n] = h);
+  }
+  const ln = (a, b) => `<div class="ln"><span>${a}</span><i>${esc(b || '')}</i></div>`;
+  function cellHTML(i, pw, ch) {
+    const n = i.jumlah || L.total, k = Math.min(1, (pw - 2 * MARGIN) / SW, (ch - 2 * MARGIN) / SH);
+    return `<div class="cell" style="width:${pw}mm;height:${ch}mm"><div class="sheet" style="left:${(pw - SW * k) / 2}mm;top:${(ch - SH * k) / 2}mm;transform:scale(${k})">
+      <div class="ttl">LEMBAR JAWAB KOMPUTER (LJK)</div>
+      <div class="hd">${ln('Nama Siswa', i.nama)}${ln('Nomor Peserta', i.nomor)}${ln('Mapel / Ujian', i.ujian)}${ln('Kelas', i.kelas)}</div>
+      <div class="note">Hitamkan bulatan jawaban dengan penuh memakai pensil 2B / pulpen hitam. Jangan menutup, melipat, atau merusak 4 kotak hitam di sudut dan garis hitam di bawah area jawaban.</div>
+      <div class="area">${areaHTML(n)}</div>
+      <div class="foot">LJK Scanner Pro · ${n} soal · pilihan A-D</div></div></div>`;
+  }
+  function pageHTML(a, b, pw, ph) {
+    return `<div class="page" style="width:${pw}mm;height:${ph - 0.6}mm">${cellHTML(a, pw, ph / 2)}${b ? cellHTML(b, pw, ph / 2) : ''}<div class="cut" style="top:${ph / 2}mm"></div></div>`;
+  }
+  function zoomSheets() { const w = $('sheetsWrap').clientWidth; if (w) $('sheets').style.zoom = Math.min(1, w / (curPW * MM2PX)); }
+  window.addEventListener('resize', zoomSheets);
+  function renderSheets(list, quiet) {
+    lastList = list;
+    const a4 = $('cKertas').value === 'a4', pw = a4 ? A4W : F4W, ph = a4 ? A4H : F4H; curPW = pw;
+    let h = ''; for (let i = 0; i < list.length; i += 2) h += pageHTML(list[i], list[i + 1], pw, ph);
+    $('sheets').innerHTML = h;
+    $('pgStyle').textContent = '@page{size:' + pw + 'mm ' + ph + 'mm;margin:0}';
+    $('btnPrint').disabled = !list.length; zoomSheets();
+    if (!quiet) toast(list.length + ' LJK siap dicetak (' + Math.ceil(list.length / 2) + ' lembar ' + (a4 ? 'A4' : 'F4') + ').', 'ok');
+  }
+  function onCUjian() {
+    const u = uById($('cUjian').value);
+    $('cKelas').innerHTML = kelasOpts(u ? u.kelas : S.info.kelas);
+  }
+  const ujianLabel = () => { const u = uById($('cUjian').value); return u ? u.mapel + ' - ' + u.nama : ''; };
+  const nSoal = () => { const u = uById($('cUjian').value); return u ? u.jumlah : L.total; };
+  $('cUjian').onchange = onCUjian;
+  $('cKertas').onchange = () => { if (lastList.length) renderSheets(lastList, true); };
+  $('btnBlank').onclick = () => { const x = { ujian: ujianLabel(), kelas: $('cKelas').value, jumlah: nSoal() }; renderSheets([x, x]); };
+  $('btnClass').onclick = async () => {
+    const kelas = $('cKelas').value; if (!kelas) { toast('Pilih kelas.', 'err'); return; }
+    $('btnClass').disabled = true;
+    try {
+      const r = await authCall('siswaCetak', { kelas: kelas });
+      if (!r.length) toast('Tidak ada siswa di kelas ' + kelas + '.', 'err');
+      else { const u = ujianLabel(), n = nSoal(); renderSheets(r.map(s => ({ nama: s.nama, nomor: s.nomor, kelas: s.kelas, ujian: u, jumlah: n }))); }
+    } catch (e) { toast(errMsg(e), 'err'); }
+    $('btnClass').disabled = false;
+  };
+  $('btnPrint').onclick = () => window.print();
+
+  /* ============================================================
+     MULAI
+     ============================================================ */
+  window.addEventListener('beforeunload', () => { if (stream) stream.getTracks().forEach(t => t.stop()); });
+  $('result').width = W; $('result').height = H;
+  bootLogin();
+})();
+</script>
+</body>
+</html>
