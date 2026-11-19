@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>LJK Scanner Pro</title>
+<title>SiScan Nesabar</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>
 *{box-sizing:border-box}
@@ -98,6 +98,7 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
 .note{position:absolute;left:3mm;right:3mm;top:25mm;font-size:2.5mm;line-height:1.3}
 .area{position:absolute;left:5mm;top:38mm;width:193mm;height:96mm}
 .mk{position:absolute;width:7mm;height:7mm;background:#000;transform:translate(-50%,-50%)}
+.tm{position:absolute;background:#000;transform:translate(-50%,-50%)}
 .ori{position:absolute;width:24mm;height:2.4mm;background:#000;transform:translate(-50%,-50%)}
 .bub{position:absolute;width:5.2mm;height:5.2mm;border:.3mm solid #000;border-radius:50%;transform:translate(-50%,-50%);background:#fff}
 .num{position:absolute;transform:translate(-50%,-50%);font-size:3.4mm;font-weight:700;width:7mm;text-align:center}
@@ -124,7 +125,7 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
 <!-- ================= LOGIN ================= -->
 <section id="loginView">
   <div class="card">
-    <h3>LJK Scanner Pro</h3>
+    <h3>SiScan Nesabar</h3>
     <div class="sub">Masuk sebagai guru</div>
     <label>Nama Guru</label>
     <input type="text" id="lGuru" list="dlGuru" placeholder="Ketik nama atau pilih dari daftar" autocomplete="off" autocapitalize="words" spellcheck="false">
@@ -210,10 +211,10 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
             <div><span class="ok">✔ Scan selesai</span><b id="rName"></b></div>
             <div class="score"><b id="sSkor">0</b><small>skor</small></div>
           </div>
-          <div class="mini"><span>Benar: <b id="sBenar">0</b></span><span>·</span><span>Salah: <b id="sSalah">0</b></span></div>
+          <div class="mini"><span>Benar: <b id="sBenar">0</b></span><span>·</span><span>Salah: <b id="sSalah">0</b></span><span>·</span><span>Tanda: <b id="sMarks">-</b></span></div>
           <canvas id="result"></canvas>
           <details id="dtl"><summary id="dtlSum">Koreksi manual (ketuk nomor: A → B → C → D → kosong)</summary><div id="grid"></div></details>
-          <div class="bar2"><button class="btn alt" id="btnRetry">Ulangi</button><button class="btn ok" id="btnSave" disabled>Simpan</button></div>
+          <div class="bar2"><button class="btn alt" id="btnUlang">Ulangi</button><button class="btn ok" id="btnSave" disabled>Simpan</button></div>
         </div>
       </div>
     </section>
@@ -240,7 +241,7 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
           <button class="btn" id="btnClass">LJK per siswa (satu kelas)</button>
         </div>
         <div class="row"><button class="btn ok" id="btnPrint" disabled>Cetak / Simpan PDF</button></div>
-        <div class="hint">Setiap lembar kertas berisi 2 LJK (atas &amp; bawah). Ukuran satu LJK = setengah F4 dikurangi margin 6 mm. Di dialog cetak pilih ukuran kertas yang sama, skala 100% (jangan "Fit to page"), margin None. Gunting di garis putus-putus tengah. Jangan memotong 4 kotak hitam dan garis hitam di bawah area jawaban.</div>
+        <div class="hint">Setiap lembar kertas berisi 2 LJK (atas &amp; bawah). Ukuran satu LJK = setengah F4 dikurangi margin 6 mm. Di dialog cetak pilih ukuran kertas yang sama, skala 100% (jangan "Fit to page"), margin None. Gunting di garis putus-putus tengah. Jangan memotong 4 kotak hitam sudut, tanda hitam kecil di tepi kiri/kanan/atas/bawah, kotak kecil kode versi, dan garis hitam di bawah area jawaban.</div>
       </div>
       <div id="sheetsWrap"><div id="sheets"></div></div>
     </section>
@@ -306,11 +307,18 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
   const AW = 193, AH = 96;                                          // jarak pusat 4 kotak sudut (mm)
   const L = { colX: [5.5, 43, 80.5, 118, 155.5], optDX: 8.5, optStep: 7, optY: 4, y0: 12, yStep: 8.4, perCol: 10, total: MAX_SOAL, letters: ['A', 'B', 'C', 'D'] };
   const ORI_FX = 0.35;                                              // posisi garis orientasi di tepi bawah area (pecahan lebar)
-  const PXMM = 6, PAD = 48, RW = Math.round(AW * PXMM), RH = Math.round(AH * PXMM), W = RW + 2 * PAD, H = RH + 2 * PAD, R_READ = 10;
+  /* LAYOUT v2: tanda waktu tambahan (semua koordinat mm terhadap pusat 4 kotak sudut)
+     - tanda kiri & kanan: satu per baris (x = 0 dan x = AW, y = baris bulatan)
+     - tanda tengah atas & bawah: di x = MIDX (celah antar blok huruf A-D agar tidak bertabrakan)
+     - kode versi: 4 kotak kecil di bawah area, bit ke-i terisi bila bit versi menyala */
+  const LAYOUT_VER = 2;
+  const TM = { sideW: 4, sideH: 2.4, midW: 5, midX: 118.25, verY: 101.5, verX0: 160, verStep: 6, verW: 3.4, verBits: 4 };
+  const PXMM = 6, PAD = 48, RW = Math.round(AW * PXMM), RH = Math.round(AH * PXMM), W = RW + 2 * PAD, H = RH + 2 * PAD, R_READ = 10, SEARCH = 3;
   function bub(q, j) {
     const c = Math.floor(q / L.perCol), r = q % L.perCol;
     return { fx: (L.colX[c] + L.optDX + j * L.optStep) / AW, fy: (L.y0 + r * L.yStep) / AH };
   }
+  const rowFy = r => (L.y0 + r * L.yStep) / AH;
   const toPx = p => ({ x: PAD + p.fx * RW, y: PAD + p.fy * RH });
   const pct = v => (v * 100).toFixed(4) + '%';
   let curPW = F4W, lastList = [];
@@ -471,9 +479,9 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
      SCAN: pilih siswa
      ============================================================ */
   const cur = { ujian: null, kelas: '', siswa: [], sel: null };
-  let lastRatios = null, answers = [], saved = false, holdSig = null, saving = false;
+  let lastRatios = null, lastPos = null, lastMeta = null, answers = [], saved = false, holdSig = null, saving = false;
 
-  function resetResult() { lastRatios = null; answers = []; saved = false; $('resBox').hidden = true; }
+  function resetResult() { lastRatios = null; lastPos = null; lastMeta = null; answers = []; saved = false; $('resBox').hidden = true; }
   function onSUjian() {
     cur.ujian = uById($('sUjian').value); cur.siswa = []; cur.sel = null;
     $('sKelas').innerHTML = cur.ujian ? kelasOpts(cur.ujian.kelas) : '';
@@ -621,6 +629,43 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     }
     return best;
   }
+  /* ---- Pencarian tanda waktu pada citra biner hasil warp ---- */
+  function findMark(bin, ex, ey, ww, wh, eA) {
+    const x0 = Math.max(0, Math.round(ex - ww)), y0 = Math.max(0, Math.round(ey - wh));
+    const x1 = Math.min(bin.cols, Math.round(ex + ww)), y1 = Math.min(bin.rows, Math.round(ey + wh));
+    if (x1 - x0 < 8 || y1 - y0 < 8) return null;
+    const roi = bin.roi(new cv.Rect(x0, y0, x1 - x0, y1 - y0)), cs = new cv.MatVector(), hi = new cv.Mat();
+    let best = null, bd = 1e9;
+    try {
+      cv.findContours(roi, cs, hi, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+      for (let i = 0; i < cs.size(); i++) {
+        const c = cs.get(i), a = cv.contourArea(c), r = cv.boundingRect(c); c.delete();
+        if (a < eA * 0.45 || a > eA * 1.7) continue;
+        if (r.x <= 0 || r.y <= 0 || r.x + r.width >= roi.cols || r.y + r.height >= roi.rows) continue; // terpotong jendela
+        const cx = x0 + r.x + r.width / 2, cy = y0 + r.y + r.height / 2, d = Math.hypot(cx - ex, cy - ey);
+        if (d < bd) { bd = d; best = { dx: cx - ex, dy: cy - ey }; }
+      }
+    } finally { roi.delete(); cs.delete(); hi.delete(); }
+    return best;
+  }
+  function dropOutlierDx(a) {
+    const xs = a.filter(Boolean).map(v => v.dx).sort((p, q) => p - q);
+    if (xs.length < 3) return a;
+    const med = xs[xs.length >> 1];
+    return a.map(v => (v && Math.abs(v.dx - med) > 6) ? null : v);
+  }
+  function fillGaps(a) {
+    const idx = []; a.forEach((v, i) => { if (v) idx.push(i); });
+    if (!idx.length) return a.map(() => ({ dx: 0, dy: 0 }));
+    return a.map((v, i) => {
+      if (v) return v;
+      let lo = -1, hi = -1;
+      idx.forEach(k => { if (k < i) lo = k; else if (k > i && hi < 0) hi = k; });
+      if (lo < 0) return a[hi]; if (hi < 0) return a[lo];
+      const t = (i - lo) / (hi - lo);
+      return { dx: a[lo].dx * (1 - t) + a[hi].dx * t, dy: a[lo].dy * (1 - t) + a[hi].dy * t };
+    });
+  }
   function analyze(full) {
     const mats = []; const T = x => { mats.push(x); return x; };
     const out = { pts: null, msg: '', cls: 'warn', ok: false, data: null, w: 0, h: 0 };
@@ -681,19 +726,64 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
         const wr2 = T(new cv.Mat()), wbin2 = T(new cv.Mat());
         cv.flip(wr, wr2, -1); cv.flip(wbin, wbin2, -1); wr = wr2; wbin = wbin2;
       } else if (d1 < 0.5) { out.ok = false; out.cls = 'warn'; out.msg = 'Garis hitam di bawah area jawaban tidak terbaca. Pastikan seluruh LJK (4 kotak sudut + garis hitam bawah) terlihat jelas dan cahaya merata, lalu ulangi.'; return out; }
-      const mask = T(cv.Mat.zeros(2 * R_READ + 1, 2 * R_READ + 1, cv.CV_8UC1));
-      cv.circle(mask, new cv.Point(R_READ, R_READ), R_READ, new cv.Scalar(255), -1);
-      const mcount = cv.countNonZero(mask), ratios = [];
-      for (let q = 0; q < L.total; q++) {
-        const row = [];
-        for (let j = 0; j < 4; j++) {
-          const p = toPx(bub(q, j));
-          const rr = wbin.roi(new cv.Rect(Math.round(p.x) - R_READ, Math.round(p.y) - R_READ, 2 * R_READ + 1, 2 * R_READ + 1)), tmp = new cv.Mat();
-          cv.bitwise_and(rr, mask, tmp); row.push(cv.countNonZero(tmp) / mcount); rr.delete(); tmp.delete();
-        }
-        ratios.push(row);
+      // --- Kalibrasi lokal dari tanda waktu (LAYOUT v2): koreksi lengkung/pergeseran kertas ---
+      const rows = L.perCol, eSide = TM.sideW * TM.sideH * PXMM * PXMM, eMid = TM.midW * TM.midW * PXMM * PXMM;
+      let Ls = [], Rs = [];
+      for (let r = 0; r < rows; r++) {
+        const p0 = toPx({ fx: 0, fy: rowFy(r) }), p1 = toPx({ fx: 1, fy: rowFy(r) });
+        Ls.push(findMark(wbin, p0.x, p0.y, 18, 24, eSide));
+        Rs.push(findMark(wbin, p1.x, p1.y, 18, 24, eSide));
       }
-      cv.imshow(base, wr); out.data = { ratios: ratios };
+      Ls = dropOutlierDx(Ls); Rs = dropOutlierDx(Rs);
+      const mx = TM.midX / AW, pt = toPx({ fx: mx, fy: 0 }), pb = toPx({ fx: mx, fy: 1 });
+      const Tm = findMark(wbin, pt.x, pt.y, 30, 30, eMid), Bm = findMark(wbin, pb.x, pb.y, 30, 30, eMid);
+      const found = Ls.filter(Boolean).length + Rs.filter(Boolean).length + (Tm ? 1 : 0) + (Bm ? 1 : 0), total = 2 * rows + 2;
+      const Lf = fillGaps(Ls), Rf = fillGaps(Rs);
+      const lerp = (a, b, t) => ({ dx: a.dx * (1 - t) + b.dx * t, dy: a.dy * (1 - t) + b.dy * t });
+      // koreksi di (fx, baris r, fy): interpolasi 3 simpul sepanjang lebar (kiri - tengah - kanan)
+      const offAt = (fx, r, fy) => {
+        const m = (Tm && Bm) ? lerp(Tm, Bm, fy) : (Tm || Bm || lerp(Lf[r], Rf[r], 0.5));
+        return fx <= mx ? lerp(Lf[r], m, fx / mx) : lerp(m, Rf[r], (fx - mx) / (1 - mx));
+      };
+      // --- Pembacaan gelembung memakai integral image (cepat) + pencarian posisi terbaik +-SEARCH px ---
+      const ii = T(new cv.Mat()); cv.integral(wbin, ii);
+      const IW = ii.cols, IH = ii.rows, idat = ii.data32S, hw = [];
+      let mcount = 0;
+      for (let dy = -R_READ; dy <= R_READ; dy++) { const h = Math.round(Math.sqrt(R_READ * R_READ - dy * dy)); hw.push(h); mcount += 2 * h + 1; }
+      const disc = (x, y) => {
+        if (x - R_READ < 0 || y - R_READ < 0 || x + R_READ + 1 >= IW || y + R_READ + 1 >= IH) return 0;
+        let s = 0;
+        for (let k = 0; k < hw.length; k++) {
+          const yy = y - R_READ + k, h = hw[k], a = (yy + 1) * IW, b = yy * IW;
+          s += idat[a + x + h + 1] - idat[a + x - h] - idat[b + x + h + 1] + idat[b + x - h];
+        }
+        return s / 255 / mcount;
+      };
+      const bestDisc = (cx, cy) => {
+        let best = -1, bx = cx, by = cy;
+        for (let sy = -SEARCH; sy <= SEARCH; sy++) for (let sx = -SEARCH; sx <= SEARCH; sx++) {
+          if (sx * sx + sy * sy > SEARCH * SEARCH) continue;
+          const v = disc(cx + sx, cy + sy); if (v > best) { best = v; bx = cx + sx; by = cy + sy; }
+        }
+        return { v: Math.max(best, 0), x: bx, y: by };
+      };
+      const ratios = [], pos = [];
+      for (let q = 0; q < L.total; q++) {
+        const row = [], prow = [], r = q % L.perCol;
+        for (let j = 0; j < 4; j++) {
+          const b = bub(q, j), p = toPx(b), o = offAt(b.fx, r, b.fy);
+          const d = bestDisc(Math.round(p.x + o.dx), Math.round(p.y + o.dy));
+          row.push(d.v); prow.push({ x: d.x, y: d.y });
+        }
+        ratios.push(row); pos.push(prow);
+      }
+      // --- Kode versi layout (4 kotak kecil di bawah area jawaban) ---
+      let ver = 0;
+      for (let i = 0; i < TM.verBits; i++) {
+        const fx = (TM.verX0 + i * TM.verStep) / AW, p = toPx({ fx: fx, fy: TM.verY / AH }), o = offAt(fx, rows - 1, 1);
+        if (bestDisc(Math.round(p.x + o.dx), Math.round(p.y + o.dy)).v > 0.6) ver |= 1 << i;
+      }
+      cv.imshow(base, wr); out.data = { ratios: ratios, pos: pos, found: found, total: total, ver: ver };
       return out;
     } catch (e) {
       console.error(e); out.ok = false; out.cls = 'err'; out.msg = 'Terjadi kesalahan pemrosesan gambar: ' + errMsg(e); return out;
@@ -768,11 +858,11 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
   }
   function showResult(data) {
     const wasOpen = !$('resBox').hidden;
-    lastRatios = data.ratios; saved = false; interpret(); $('resBox').hidden = false; renderAll();
+    lastRatios = data.ratios; lastPos = data.pos; lastMeta = data; saved = false; interpret(); $('resBox').hidden = false; renderAll();
     if (!wasOpen) fbScan();
   }
   function closeRes() { resetResult(); pauseUntil = Date.now() + 1500; if (stream) setStatus('Arahkan kamera ke LJK berikutnya.', 'warn'); }
-  $('btnRetry').onclick = closeRes;
+  $('btnUlang').onclick = closeRes;
   function score() {
     const n = cur.ujian.jumlah, k = cur.ujian.kunci; let b = 0;
     for (let i = 0; i < n; i++) if (k[i] && answers[i] === k[i]) b++;
@@ -784,13 +874,13 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     for (let q = 0; q < n; q++) {
       const ans = answers[q], key = kunci[q] || '', kj = L.letters.indexOf(key);
       for (let j = 0; j < 4; j++) {
-        const p = toPx(bub(q, j));
+        const p = lastPos[q][j];
         ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(14,165,233,.85)'; ctx.beginPath(); ctx.arc(p.x, p.y, R_READ, 0, 6.2832); ctx.stroke();
         const chosen = ans === L.letters[j], dbl = ans === 'GANDA' && lastRatios[q][j] >= thr;
         if (chosen || dbl) { ctx.lineWidth = 5; ctx.strokeStyle = dbl ? '#f59e0b' : (ans === key ? '#16a34a' : '#dc2626'); ctx.beginPath(); ctx.arc(p.x, p.y, R_READ + 3, 0, 6.2832); ctx.stroke(); }
       }
       if (kj >= 0 && ans !== key) {
-        const k = toPx(bub(q, kj)); ctx.lineWidth = 3; ctx.strokeStyle = '#16a34a'; ctx.setLineDash([5, 4]);
+        const k = lastPos[q][kj]; ctx.lineWidth = 3; ctx.strokeStyle = '#16a34a'; ctx.setLineDash([5, 4]);
         ctx.beginPath(); ctx.arc(k.x, k.y, R_READ + 7, 0, 6.2832); ctx.stroke(); ctx.setLineDash([]);
       }
     }
@@ -798,6 +888,10 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
   function renderAll() {
     if (!lastRatios || !cur.ujian) return;
     const s = score(), n = cur.ujian.jumlah;
+    if (lastMeta) {
+      const mk = $('sMarks'); mk.textContent = lastMeta.found + '/' + lastMeta.total; mk.style.color = lastMeta.found >= lastMeta.total * 0.7 ? '#15803d' : '#b45309';
+      if (lastMeta.ver !== LAYOUT_VER && !lastMeta.verWarned) { lastMeta.verWarned = true; toast('Versi layout LJK tidak cocok (terbaca v' + lastMeta.ver + ', aplikasi v' + LAYOUT_VER + '). Hasil bisa kurang akurat.', 'err'); }
+    }
     $('sBenar').textContent = s.benar; $('sSalah').textContent = s.salah; $('sSkor').textContent = s.skor;
     let h = '';
     for (let i = 0; i < n; i++) { const a = answers[i], k = cur.ujian.kunci[i] || '?'; h += `<div class="c ${a === k ? 'ok' : 'bad'}" data-i="${i}"><b>No. ${i + 1}</b><span>${a}</span><small>kunci ${k}</small></div>`; }
@@ -880,6 +974,9 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     let h = '';
     [[0, 0], [1, 0], [1, 1], [0, 1]].forEach(c => { h += `<div class="mk" style="left:${pct(c[0])};top:${pct(c[1])}"></div>`; });
     h += `<div class="ori" style="left:${pct(ORI_FX)};top:${pct(1)}"></div>`;
+    for (let r = 0; r < L.perCol; r++) [0, 1].forEach(fx => { h += `<div class="tm" style="width:${TM.sideW}mm;height:${TM.sideH}mm;left:${pct(fx)};top:${pct(rowFy(r))}"></div>`; });
+    [0, 1].forEach(fy => { h += `<div class="tm" style="width:${TM.midW}mm;height:${TM.midW}mm;left:${pct(TM.midX / AW)};top:${pct(fy)}"></div>`; });
+    for (let i = 0; i < TM.verBits; i++) if (LAYOUT_VER >> i & 1) h += `<div class="tm" style="width:${TM.verW}mm;height:${TM.verW}mm;left:${pct((TM.verX0 + i * TM.verStep) / AW)};top:${pct(TM.verY / AH)}"></div>`;
     for (let c = 0; c < Math.ceil(n / L.perCol); c++) for (let j = 0; j < 4; j++) h += `<div class="opt" style="left:${pct((L.colX[c] + L.optDX + j * L.optStep) / AW)};top:${pct(L.optY / AH)}">${L.letters[j]}</div>`;
     for (let q = 0; q < n; q++) {
       const c = Math.floor(q / L.perCol), r = q % L.perCol;
@@ -894,9 +991,9 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     return `<div class="cell" style="width:${pw}mm;height:${ch}mm"><div class="sheet" style="left:${(pw - SW * k) / 2}mm;top:${(ch - SH * k) / 2}mm;transform:scale(${k})">
       <div class="ttl">LEMBAR JAWAB KOMPUTER (LJK)</div>
       <div class="hd">${ln('Nama Siswa', i.nama)}${ln('Nomor Peserta', i.nomor)}${ln('Mapel / Ujian', i.ujian)}${ln('Kelas', i.kelas)}</div>
-      <div class="note">Hitamkan bulatan jawaban dengan penuh memakai pensil 2B / pulpen hitam. Jangan menutup, melipat, atau merusak 4 kotak hitam di sudut dan garis hitam di bawah area jawaban.</div>
+      <div class="note">Hitamkan bulatan jawaban dengan penuh memakai pensil 2B / pulpen hitam. Jangan menutup, melipat, atau merusak 4 kotak hitam di sudut, tanda hitam kecil di tepi, dan garis hitam di bawah area jawaban.</div>
       <div class="area">${areaHTML(n)}</div>
-      <div class="foot">LJK Scanner Pro · ${n} soal · pilihan A-D</div></div></div>`;
+      <div class="foot">SiScan Nesabar · Layout v${LAYOUT_VER} · ${n} soal · pilihan A-D</div></div></div>`;
   }
   function pageHTML(a, b, pw, ph) {
     return `<div class="page" style="width:${pw}mm;height:${ph - 0.6}mm">${cellHTML(a, pw, ph / 2)}${b ? cellHTML(b, pw, ph / 2) : ''}<div class="cut" style="top:${ph / 2}mm"></div></div>`;
