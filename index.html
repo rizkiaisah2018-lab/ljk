@@ -30,6 +30,15 @@ textarea{min-height:56px}
 #busy .pg i{display:block;height:100%;width:40%;background:#fff;animation:slide 1.1s ease-in-out infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes slide{0%{margin-left:-40%}100%{margin-left:100%}}
+.kd{border:1px solid #cbd5e1;border-radius:10px;background:#fff;margin:6px 0}
+.kd>summary{padding:10px 12px;cursor:pointer;font-weight:600;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.kd>summary::-webkit-details-marker{display:none}
+.kd>summary::after{content:'▾';color:#64748b;flex:none}.kd[open]>summary::after{content:'▴'}
+.kdo{border-width:2px}.kdo>summary{background:#f8fafc;border-radius:10px}
+.chips label.taken{text-decoration:line-through}
+.kd .chips{padding:0 10px 10px}
+.kc{flex:1;text-align:right;font-weight:500;color:#2563eb;font-size:13px}
+.chips label.off{opacity:.35;cursor:not-allowed}
 #logo{display:block;max-width:110px;max-height:110px;margin:0 auto 8px;object-fit:contain}
 #toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:50;max-width:92%;padding:10px 16px;border-radius:10px;background:#0f172a;color:#fff;font-size:14px;opacity:0;pointer-events:none;transition:.25s}
 #toast.on{opacity:1}#toast.err{background:#b91c1c}#toast.ok{background:#15803d}
@@ -169,7 +178,8 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
         <label>Nama ujian</label><input type="text" id="fNama" placeholder="contoh: PTS Ganjil 2026" autocomplete="off">
         <label>Mata pelajaran</label><select id="fMapel"></select>
         <label>Kelas <span class="grp"><button type="button" data-g="7">Semua 7</button><button type="button" data-g="8">Semua 8</button><button type="button" data-g="9">Semua 9</button><button type="button" data-g="x">Kosongkan</button></span></label>
-        <div id="fKelas" class="chips"></div>
+        <details class="kd kdo" id="kdDrop"><summary><span>Pilih kelas (7A – 9I)</span><span class="kc" id="kdSum"></span></summary><div id="fKelas" style="padding:0 8px 8px"></div></details>
+        <div class="hint" id="fHint">Pilih mata pelajaran dulu, lalu buka dropdown kelas dan centang kelasnya (boleh lebih dari satu). Kelas bertanda 🔒 sudah dibuat guru lain untuk mapel yang sama.</div>
         <div class="row">
           <div><label>Jumlah soal (1-50)</label><input type="number" id="fJumlah" min="1" max="50" value="50"></div>
           <div><label>KKM</label><input type="number" id="fKkm" min="0" max="100" value="75"></div>
@@ -237,6 +247,7 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
         <label>Kelas</label><select id="rKelas"></select>
         <div class="row"><button class="btn alt sm" id="btnReload">Muat ulang</button><button class="btn sm" id="btnCsv" disabled>Unduh CSV</button></div>
       </div>
+      <div class="hint" id="rkNote" hidden></div>
       <div id="rkBody"></div>
     </section>
 
@@ -372,7 +383,7 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
   const SES_KEY = 'siscan_session';
   const loadSes = () => { try { return JSON.parse(localStorage.getItem(SES_KEY) || 'null'); } catch (e) { return null; } };
   const saveSes = (g, p) => { try { localStorage.setItem(SES_KEY, JSON.stringify({ g: g, p: p })); } catch (e) { } };
-  const clearSes = () => { try { localStorage.removeItem(SES_KEY); sessionStorage.removeItem('ljk'); } catch (e) { } };
+  const clearSes = () => { try { localStorage.removeItem(SES_KEY); sessionStorage.removeItem('ljk'); Object.keys(localStorage).filter(k => k.indexOf('siscan_rk_') === 0).forEach(k => localStorage.removeItem(k)); } catch (e) { } };
   async function bootLogin() {
     $('btnRetry').hidden = true; showMsg('');
     try {
@@ -398,7 +409,7 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
       saveSes(r.nama, pin);
       $('gName').textContent = r.nama;
       $('loginView').hidden = true; $('appView').hidden = false;
-      await loadUjian();
+      if (Array.isArray(r.ujian)) { S.ujian = r.ujian; renderUjian(); } else await loadUjian();
       go('ujian');
     } catch (e) {
       const m = errMsg(e);
@@ -457,26 +468,70 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     fKey = s.slice(0, MAX_SOAL).split(''); renderKey();
     if (s.length > MAX_SOAL) toast('Hanya ' + MAX_SOAL + ' soal pertama yang dipakai.', '');
   };
-  function chipsRender(sel) {
-    $('fKelas').innerHTML = S.info.kelas.map(k => `<label class="${sel.includes(k) ? 'on' : ''}"><input type="checkbox" value="${esc(k)}" ${sel.includes(k) ? 'checked' : ''}>${esc(k)}</label>`).join('') || '<div class="hint">Belum ada data kelas di server Nesabar.</div>';
+  const GRADES = ['7', '8', '9'], ABJAD = 'ABCDEFGHI'.split('');
+  function kelasSum() {
+    document.querySelectorAll('#fKelas details').forEach(d => {
+      const v = Array.from(d.querySelectorAll('input:checked')).map(i => i.value);
+      d.querySelector('.kc').textContent = v.length ? (v.length <= 5 ? v.join(', ') : v.length + ' kelas dipilih') : '';
+    });
+    const all = Array.from(document.querySelectorAll('#fKelas input:checked')).map(i => i.value);
+    $('kdSum').textContent = all.length ? (all.length <= 6 ? all.join(', ') : all.length + ' kelas dipilih') : 'belum dipilih';
   }
-  $('fKelas').onchange = e => { e.target.parentNode.classList.toggle('on', e.target.checked); };
+  let taken = {};   // kelas -> nama guru lain yang sudah memakai kombinasi mapel + kelas itu
+  function chipsRender(sel) {
+    const wasOpen = new Set(Array.from(document.querySelectorAll('#fKelas details[open]')).map(d => d.dataset.g));
+    const avail = S.info.kelas, has = new Set(avail), mapelOk = !!$('fMapel').value;
+    const chip = k => {
+      const on = sel.includes(k), tk = taken[k], ok = mapelOk && !tk && (has.has(k) || on);
+      return `<label class="${on ? 'on' : ''}${ok ? '' : ' off'}${tk ? ' taken' : ''}"${tk ? ' title="Sudah dibuat oleh ' + esc(tk) + '"' : ''}><input type="checkbox" value="${esc(k)}" ${on ? 'checked' : ''} ${ok ? '' : 'disabled'}>${esc(k)}${tk ? ' 🔒' : ''}</label>`;
+    };
+    let h = GRADES.map(g => {
+      const names = ABJAD.map(c => g + c);
+      avail.forEach(k => { if (k.charAt(0) === g && names.indexOf(k) < 0) names.push(k); });
+      return `<details class="kd" data-g="${g}"${(names.some(k => sel.includes(k)) || wasOpen.has(g)) ? ' open' : ''}><summary>Kelas ${g}<span class="kc"></span></summary><div class="chips">${names.map(chip).join('')}</div></details>`;
+    }).join('');
+    const other = avail.filter(k => GRADES.indexOf(k.charAt(0)) < 0);
+    if (other.length) h += `<details class="kd" open><summary>Kelas lain<span class="kc"></span></summary><div class="chips">${other.map(chip).join('')}</div></details>`;
+    $('fKelas').innerHTML = h; kelasSum();
+  }
+  // muat kelas yang sudah dipakai guru lain untuk mapel terpilih, lalu segarkan pilihan kelas
+  async function loadTaken() {
+    const m = $('fMapel').value; taken = {};
+    if (m) {
+      try {
+        const r = await authCall('terpakai', { mapel: m });
+        if ($('fMapel').value !== m) return; // mapel sudah diganti lagi
+        r.forEach(x => { taken[x.kelas] = x.guru; });
+      } catch (e) { toast(errMsg(e), 'err'); }
+    }
+    const sel = Array.from(document.querySelectorAll('#fKelas input:checked')).map(i => i.value);
+    const keep = sel.filter(k => !taken[k]);
+    chipsRender(keep);
+    if (keep.length < sel.length) toast('Kelas ' + sel.filter(k => taken[k]).join(', ') + ' dilepas: sudah dibuat guru lain untuk mapel ini.', 'err');
+  }
+  $('fMapel').onchange = loadTaken;
+  $('fKelas').onchange = e => { e.target.parentNode.classList.toggle('on', e.target.checked); kelasSum(); };
   const grp = () => document.querySelector('.grp');
   grp().onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
     document.querySelectorAll('#fKelas input').forEach(i => {
       if (b.dataset.g === 'x') i.checked = false;
-      else if (i.value.charAt(0) === b.dataset.g) i.checked = true;
+      else if (!i.disabled && i.value.charAt(0) === b.dataset.g) i.checked = true;
       i.parentNode.classList.toggle('on', i.checked);
     });
+    if (b.dataset.g !== 'x') { const d = document.querySelector('#fKelas details[data-g="' + b.dataset.g + '"]'); if (d) d.open = true; }
+    kelasSum();
   };
   function openForm(u) {
     fId = u ? u.id : '';
     $('ujTitle').textContent = u ? 'Edit Ujian' : 'Ujian Baru';
     $('fNama').value = u ? u.nama : '';
-    $('fMapel').innerHTML = S.info.mapel.map(m => `<option>${esc(m)}</option>`).join('');
-    if (u) $('fMapel').value = u.mapel;
+    $('fMapel').innerHTML = '<option value="">— Pilih mata pelajaran —</option>' + S.info.mapel.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+    $('fMapel').value = u ? u.mapel : '';
+    taken = {}; $('fKelas').innerHTML = '';
     chipsRender(u ? u.kelas : []);
+    $('kdDrop').open = !!(u && u.kelas.length);
+    loadTaken();
     $('fJumlah').value = u ? u.jumlah : MAX_SOAL; $('fKkm').value = u ? u.kkm : 75;
     fKey = u ? u.kunci.slice() : []; $('fPaste').value = '';
     $('fWarn').hidden = !u; renderKey();
@@ -486,11 +541,13 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
   $('btnCancelUj').onclick = () => { $('ujForm').hidden = true; };
   $('btnSaveUj').onclick = async () => {
     const kelas = Array.from(document.querySelectorAll('#fKelas input:checked')).map(i => i.value);
+    if (!$('fMapel').value) { toast('Pilih mata pelajaran terlebih dahulu.', 'err'); return; }
+    if (!kelas.length) { toast('Pilih minimal satu kelas.', 'err'); $('kdDrop').open = true; return; }
     const btn = $('btnSaveUj'); btn.disabled = true;
     try {
       S.ujian = await authCall('saveUjian', { data: { id: fId, nama: $('fNama').value, mapel: $('fMapel').value, kelas: kelas, jumlah: $('fJumlah').value, kkm: $('fKkm').value, kunci: fKey } });
       renderUjian(); $('ujForm').hidden = true; toast('Ujian tersimpan.', 'ok');
-    } catch (e) { toast(errMsg(e), 'err'); }
+    } catch (e) { toast(errMsg(e), 'err'); if (/sudah dibuat/i.test(errMsg(e))) loadTaken(); }
     btn.disabled = false;
   };
 
@@ -992,19 +1049,30 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
   let rekapData = null;
   function onRUjian() { const u = uById($('rUjian').value); $('rKelas').innerHTML = u ? kelasOpts(u.kelas) : ''; loadRekap(); }
   let rkSeq = 0, rkBusyKey = '';
+  const rkNote = t => { const n = $('rkNote'); n.textContent = t || ''; n.hidden = !t; };
+  const rkRead = k => { try { return JSON.parse(localStorage.getItem('siscan_rk_' + S.guru + '|' + k) || 'null'); } catch (e) { return null; } };
+  const rkWrite = (k, d) => { try { localStorage.setItem('siscan_rk_' + S.guru + '|' + k, JSON.stringify(d)); } catch (e) { } };
   async function loadRekap() {
     const id = $('rUjian').value, kelas = $('rKelas').value, key = id + '|' + kelas;
     if (id && kelas && rkBusyKey === key) return; // permintaan yang sama sedang berjalan
     const my = ++rkSeq;
-    rekapData = null; $('btnCsv').disabled = true;
+    rekapData = null; $('btnCsv').disabled = true; rkNote('');
     if (!id || !kelas) { rkBusyKey = ''; $('rkBody').innerHTML = '<div class="hint">Pilih ujian dan kelas.</div>'; return; }
     rkBusyKey = key;
-    $('rkBody').innerHTML = '<div class="hint">Memuat rekap…</div>';
+    // tampilkan data terakhir yang tersimpan segera (bila ada), lalu perbarui dari server
+    const old = rkRead(key);
+    if (old && old.rows) { rekapData = old; renderRekap(old); $('btnCsv').disabled = false; rkNote('Menampilkan data terakhir, sedang memperbarui…'); }
+    else $('rkBody').innerHTML = '<div class="hint">Memuat rekap…</div>';
     try {
       const d = await authCall('rekap', { idUjian: id, kelas: kelas });
       if (my !== rkSeq) return; // sudah ada permintaan yang lebih baru
-      rekapData = d; renderRekap(d); $('btnCsv').disabled = false;
-    } catch (e) { if (my === rkSeq) { $('rkBody').innerHTML = ''; toast(errMsg(e), 'err'); } }
+      rekapData = d; renderRekap(d); $('btnCsv').disabled = false; rkNote(''); rkWrite(key, d);
+    } catch (e) {
+      if (my === rkSeq) {
+        toast(errMsg(e), 'err');
+        if (old && old.rows) rkNote('Gagal memperbarui. Menampilkan data terakhir yang tersimpan.'); else $('rkBody').innerHTML = '';
+      }
+    }
     finally { if (my === rkSeq) rkBusyKey = ''; }
   }
   function renderRekap(r) {
