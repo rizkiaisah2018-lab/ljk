@@ -40,6 +40,9 @@ textarea{min-height:56px}
 .kc{flex:1;text-align:right;font-weight:500;color:#2563eb;font-size:13px}
 .chips label.off{opacity:.35;cursor:not-allowed}
 #logo{display:block;max-width:110px;max-height:110px;margin:0 auto 8px;object-fit:contain}
+#delBox{position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.65);display:flex;align-items:center;justify-content:center;padding:16px}
+.dlg{background:#fff;border-radius:14px;padding:18px;max-width:400px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.dlg h3{margin:0 0 6px;color:#b91c1c}.dlg .warn{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px;font-size:13px;margin:10px 0;line-height:1.45}
 #toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:50;max-width:92%;padding:10px 16px;border-radius:10px;background:#0f172a;color:#fff;font-size:14px;opacity:0;pointer-events:none;transition:.25s}
 #toast.on{opacity:1}#toast.err{background:#b91c1c}#toast.ok{background:#15803d}
 #loginView{max-width:420px;margin:0 auto;padding:24px 14px}
@@ -140,6 +143,15 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
 </head>
 <body>
 <div id="toast"></div>
+<div id="delBox" hidden role="dialog" aria-modal="true" aria-labelledby="delTitle">
+  <div class="dlg">
+    <h3 id="delTitle">⚠ Hapus ujian ini?</h3>
+    <div><b id="delName"></b></div>
+    <div class="sub" id="delSub"></div>
+    <div class="warn"><b>Peringatan:</b> ujian beserta kunci jawaban dan <b>seluruh hasil scan siswa</b> pada ujian ini akan dihapus <b>permanen</b> dan <b>tidak dapat dikembalikan</b>. Rekap nilai juga akan hilang. Disarankan mengunduh CSV rekap terlebih dahulu bila nilai masih diperlukan.</div>
+    <div class="row"><button class="btn alt" id="delNo">Batal</button><button class="btn danger" id="delYes">Ya, Hapus Permanen</button></div>
+  </div>
+</div>
 <div id="busy" role="status" aria-live="polite"><span class="sp"></span><span id="busyTxt">Memuat…</span><div class="pg"><i></i></div></div>
 
 <!-- ================= LOGIN ================= -->
@@ -302,8 +314,8 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
     });
   }
   /* ---- Status bar proses (memuat / menyimpan) ---- */
-  const SAVE_ACTIONS = { saveUjian: 1, simpan: 1 };
-  const LABELS = { init: 'Memuat daftar guru…', login: 'Masuk & memuat data dari server Nesabar…', ujianList: 'Memuat daftar ujian dari server Nesabar…', saveUjian: 'Menyimpan ujian ke server Nesabar…', siswaKelas: 'Memuat daftar siswa dari server Nesabar…', simpan: 'Menyimpan hasil scan ke server Nesabar…', rekap: 'Memuat rekap dari server Nesabar…', siswaCetak: 'Memuat data siswa dari server Nesabar…' };
+  const SAVE_ACTIONS = { saveUjian: 1, simpan: 1, hapusUjian: 1 };
+  const LABELS = { hapusUjian: 'Menghapus ujian dari server Nesabar…', init: 'Memuat daftar guru…', login: 'Masuk & memuat data dari server Nesabar…', ujianList: 'Memuat daftar ujian dari server Nesabar…', saveUjian: 'Menyimpan ujian ke server Nesabar…', siswaKelas: 'Memuat daftar siswa dari server Nesabar…', simpan: 'Menyimpan hasil scan ke server Nesabar…', rekap: 'Memuat rekap dari server Nesabar…', siswaCetak: 'Memuat data siswa dari server Nesabar…' };
   const busyQ = [];
   function busyRender() {
     const el = $('busy'), top = busyQ[busyQ.length - 1];
@@ -438,13 +450,15 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
       <div class="sub">${esc(u.mapel)} · Kelas ${esc(u.kelas.join(', '))} · ${u.jumlah} soal · KKM ${u.kkm}</div>
       <div class="row"><button class="btn sm ok" data-a="scan" data-id="${esc(u.id)}">Scan</button>
       <button class="btn sm" data-a="rekap" data-id="${esc(u.id)}">Rekap</button>
-      <button class="btn sm alt" data-a="edit" data-id="${esc(u.id)}">Edit kunci</button></div></div>`).join('')
+      <button class="btn sm alt" data-a="edit" data-id="${esc(u.id)}">Edit kunci</button>
+      <button class="btn sm danger" data-a="hapus" data-id="${esc(u.id)}">Hapus</button></div></div>`).join('')
       : '<div class="hint">Belum ada ujian. Buat ujian baru untuk memasukkan kunci jawaban.</div>';
   }
   $('ujList').onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
     const id = b.dataset.id;
     if (b.dataset.a === 'edit') openForm(S.ujian.find(u => u.id === id));
+    if (b.dataset.a === 'hapus') askDelete(id);
     if (b.dataset.a === 'scan') { go('scan'); $('sUjian').value = id; onSUjian(); }
     if (b.dataset.a === 'rekap') { go('rekap', true); $('rUjian').value = id; onRUjian(); }
   };
@@ -549,6 +563,40 @@ table.rk th{background:#f8fafc;position:sticky;top:0}
       renderUjian(); $('ujForm').hidden = true; toast('Ujian tersimpan.', 'ok');
     } catch (e) { toast(errMsg(e), 'err'); if (/sudah dibuat/i.test(errMsg(e))) loadTaken(); }
     btn.disabled = false;
+  };
+
+
+  /* ---- Hapus ujian (dengan popup peringatan) ---- */
+  let delId = '', deleting = false;
+  function askDelete(id) {
+    const u = S.ujian.find(x => x.id === id); if (!u) return;
+    delId = id;
+    $('delName').textContent = u.nama;
+    $('delSub').textContent = u.mapel + ' · Kelas ' + u.kelas.join(', ') + ' · ' + u.jumlah + ' soal';
+    $('delBox').hidden = false; $('delNo').focus();
+  }
+  function closeDelete() { if (deleting) return; $('delBox').hidden = true; delId = ''; }
+  $('delNo').onclick = closeDelete;
+  $('delBox').onclick = e => { if (e.target === $('delBox')) closeDelete(); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('delBox').hidden) closeDelete(); });
+  $('delYes').onclick = async () => {
+    if (!delId || deleting) return;
+    const id = delId; deleting = true; $('delYes').disabled = true; $('delNo').disabled = true; $('delYes').textContent = 'Menghapus…';
+    try {
+      const r = await authCall('hapusUjian', { idUjian: id });
+      S.ujian = r.ujian; renderUjian();
+      if (fId === id) { $('ujForm').hidden = true; fId = ''; }
+      // bersihkan keadaan Scan / Rekap / Cetak yang masih menunjuk ujian terhapus
+      if (cur.ujian && cur.ujian.id === id) { cur.ujian = null; cur.siswa = []; cur.sel = null; resetResult(); renderStu(); }
+      if ($('sUjian').value === id) $('sKelas').innerHTML = '';
+      if ($('rUjian').value === id) { $('rKelas').innerHTML = ''; rekapData = null; $('btnCsv').disabled = true; $('rkBody').innerHTML = ''; }
+      if ($('cUjian').value === id) $('cKelas').innerHTML = '';
+      try { Object.keys(localStorage).filter(k => k.indexOf('siscan_rk_' + S.guru + '|' + id + '|') === 0).forEach(k => localStorage.removeItem(k)); } catch (e) { }
+      fillSelects();
+      deleting = false; closeDelete();
+      toast('Ujian dihapus' + (r.hasil ? ' (' + r.hasil + ' hasil scan ikut terhapus).' : '.'), 'ok');
+    } catch (e) { toast(errMsg(e), 'err'); deleting = false; }
+    deleting = false; $('delYes').disabled = false; $('delNo').disabled = false; $('delYes').textContent = 'Ya, Hapus Permanen';
   };
 
   /* ============================================================
